@@ -8,7 +8,7 @@ import PasswordGenerator from "./pages/PasswordGenerator";
 
 export default function App() {
 	return (
-		<Router>
+		<Router basename="/my-it-tools">
 			<Routes>
 				<Route path={"/"} element={<Home />} />
 				<Route path={"/password-generator"} element={<PasswordGenerator />} />

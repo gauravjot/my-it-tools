@@ -15,7 +15,7 @@ module.exports = {
 		extend: {
 			fontFamily: {
 				serif: ['"Merriweather"', "Merriweather", "Times New Roman", "Georgia", "serif"],
-				sans: ['"DM Sans"', "DM Sans", "Arial", "sans-serif"],
+				sans: ['"Geist"', "Geist", "Arial", "sans-serif"],
 			},
 			colors: {
 				border: "hsl(var(--border))",

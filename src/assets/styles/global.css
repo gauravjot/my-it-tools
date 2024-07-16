@@ -2,9 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+	font-family: 'Geist';
+	src: url('/GeistVF.woff');
+	font-weight: 100 900;
+}
+
 @layer base {
 	:root {
-		--background: 0 0% 100%;
+		--background: 200 10% 96%;
 		--foreground: 240 10% 3.9%;
 
 		--card: 0 0% 100%;
@@ -33,6 +39,8 @@
 		--ring: 240 10% 3.9%;
 
 		--radius: 0.5rem;
+
+		font-size: 16px;
 	}
 
 	.dark {

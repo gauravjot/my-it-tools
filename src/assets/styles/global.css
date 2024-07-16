@@ -1,0 +1,107 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+	:root {
+		--background: 0 0% 100%;
+		--foreground: 240 10% 3.9%;
+
+		--card: 0 0% 100%;
+		--card-foreground: 240 10% 3.9%;
+
+		--popover: 0 0% 100%;
+		--popover-foreground: 240 10% 3.9%;
+
+		--primary: 240 5.9% 10%;
+		--primary-foreground: 0 0% 98%;
+
+		--secondary: 240 4.8% 95.9%;
+		--secondary-foreground: 240 5.9% 10%;
+
+		--muted: 240 4.8% 95.9%;
+		--muted-foreground: 240 3.8% 46.1%;
+
+		--accent: 209 100 87%;
+		--accent-foreground: 217 91 55%;
+
+		--destructive: 0 84.2% 60.2%;
+		--destructive-foreground: 0 0% 98%;
+
+		--border: 240 5.9% 90%;
+		--input: 240 5.9% 90%;
+		--ring: 240 10% 3.9%;
+
+		--radius: 0.5rem;
+	}
+
+	.dark {
+		--background: 240 10% 3.9%;
+		--foreground: 0 0% 98%;
+
+		--card: 240 10% 3.9%;
+		--card-foreground: 0 0% 98%;
+
+		--popover: 240 10% 3.9%;
+		--popover-foreground: 0 0% 98%;
+
+		--primary: 0 0% 98%;
+		--primary-foreground: 240 5.9% 10%;
+
+		--secondary: 240 3.7% 15.9%;
+		--secondary-foreground: 0 0% 98%;
+
+		--muted: 240 3.7% 15.9%;
+		--muted-foreground: 240 5% 64.9%;
+
+		--accent: 223 63% 21%;
+		--accent-foreground: 209 100% 67%;
+
+		--destructive: 0 62.8% 30.6%;
+		--destructive-foreground: 0 0% 98%;
+
+		--border: 240 3.7% 15.9%;
+		--input: 240 3.7% 15.9%;
+		--ring: 240 4.9% 83.9%;
+	}
+}
+
+@layer base {
+	* {
+		@apply border-border;
+	}
+	body {
+		@apply bg-background text-foreground;
+	}
+	code {
+		@apply text-90p text-foreground;
+	}
+	pre {
+		@apply rounded-md p-4 block text-left;
+	}
+	pre code {
+		@apply text-90p text-foreground whitespace-break-spaces;
+	}
+	a {
+		@apply text-accent-foreground;
+	}
+}
+
+/*
+ * Dark Mode Toggler
+ */
+.darkmode-toggle {
+	background: linear-gradient(135deg, rgba(93, 199, 225, 0.7) 30%, rgba(255, 222, 30, 0.7));
+	@apply inline-block rounded-full w-12 h-7 text-sm relative transition-all cursor-pointer;
+}
+.dark .darkmode-toggle {
+	background: linear-gradient(225deg, rgba(58, 182, 213, 0.3) 30%, rgba(116, 58, 213, 0.4));
+}
+.darkmode-toggle button {
+	@apply bg-white;
+	@apply w-[1.35rem] h-[1.35rem] rounded-full absolute p-0 border-none top-[0.2rem] shadow-sm
+    left-[0.175rem] pl-[0.175rem] transition-all ease-out duration-300;
+}
+.dark .darkmode-toggle button {
+	@apply left-[1.5rem];
+}

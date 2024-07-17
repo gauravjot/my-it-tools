@@ -1,5 +1,7 @@
+import { Button } from "@/components/ui/button";
 import ThemeToggler from "@/components/utils/ThemeToggler";
-import {Key} from "lucide-react";
+import {Key, Menu, X} from "lucide-react";
+import { useState } from "react";
 import {Link} from "react-router-dom";
 
 const links = [
@@ -12,10 +14,17 @@ const links = [
 
 export default function Sidebar() {
 	const currentPage = window.location;
+	const [isOpen, setIsOpen] = useState<boolean>(false);
 
 	return (
-		<div className="bg-white dark:bg-zinc-900 py-2 min-h-screen">
-			<div className="flex place-items-center mx-4 py-2">
+		<>
+		{!isOpen && <div className="fixed top-2 right-2 lg:hidden z-50">
+			<Button className="aspect-sqaure size-12 !p-1 rounded-full" onClick={() => {setIsOpen(true)}}>
+				<Menu size={24} />
+			</Button>
+		</div>}
+		<div className={"bg-white dark:bg-zinc-900 py-2 shadow min-h-screen" + (!isOpen && " hidden")}>
+			<div className="flex place-items-center gap-4 mx-4 py-2">
 				<Link
 					to={"/"}
 					className="flex-1 font-bold tracking-tight text-black dark:text-white text-lg"
@@ -23,6 +32,9 @@ export default function Sidebar() {
 					My IT Tools
 				</Link>
 				<ThemeToggler />
+				{isOpen && <Button className="aspect-sqaure size-12 !p-1 rounded-full lg:hidden" variant={"destructive"} onClick={() => {setIsOpen(false)}}>
+					<X size={24} />
+				</Button>}
 			</div>
 			<div className="my-8 mx-2 flex flex-col gap-1">
 				{links.map((link) => (
@@ -40,5 +52,5 @@ export default function Sidebar() {
 				))}
 			</div>
 		</div>
-	);
+		</>);
 }

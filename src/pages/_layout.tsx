@@ -9,7 +9,10 @@ export default function BaseSidebarLayout(props: {title: string; children: React
             <title>{props.title}</title>
         </Helmet>
         <div className="flex relative w-full">
-            <div className="min-w-72 border-r dark:border-zinc-800 h-screen max-h-screen overflow-y-auto sticky top-0 left-0">
+            <div 
+                className={"lg:min-w-72 lg:border-r lg:dark:border-zinc-800 lg:h-screen lg:max-h-screen lg:overflow-y-auto lg:sticky lg:top-0 lg:left-0" + 
+                            " fixed top-0 w-full"}
+            >
                 <Sidebar />
             </div>
             <div className="flex-1">

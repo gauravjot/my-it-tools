@@ -129,11 +129,8 @@ export default function PasswordGenerator() {
 									description: 'Password copied to your clipboard!'
 								})
 								// Add to previous passwords
-								if (prevPasswords.length > 0 && prevPasswords[prevPasswords.length-1].value !== password) {
+								if ((prevPasswords.length > 0 && prevPasswords[prevPasswords.length-1].value !== password) || prevPasswords.length === 0) {
 									setPrevPasswords((v) => {
-										if (v.length > 25) {
-											delete v[0];
-										}
 										v.push({
 											datetime: new Date().toISOString(),
 											value: password
@@ -166,30 +163,35 @@ export default function PasswordGenerator() {
 				</Button>
 			</div>
 			</div>
-			{prevPasswords.length > 0 ? <>
-				<div className="max-w-[90%] m-auto mt-16 mb-8 rounded-md p-6 border">
-					<h2 className="font-medium mb-4">Previous Passwords (upto 25)</h2>
-					{prevPasswords.slice().reverse().map(entry => (
-						<div className="inline-block mr-8 mt-1" key={entry.datetime}>
-							<button 
-								className="inline-block border rounded-md font-mono px-1 text-[90%] hover:border-foreground hover:text-foreground"
-								onClick={()=>{
-									navigator.clipboard.writeText(entry.value);
-									toast({
-										description: 'Password copied to your clipboard!'
-									})
-								}}
-							>
-								{entry.value}
-							</button>
-							<span className="text-muted-foreground text-xs">
-								{" "}&mdash;{" "}
-								{dateTimePretty(entry.datetime)}
-							</span>
-						</div>
-					))}
+			<div className="max-w-[90%] m-auto mt-16 mb-8 rounded-md p-6 border">
+				<div className="flex">
+					<h2 className="font-medium mb-4 flex-1">Previous Passwords (upto 25)</h2>
+					<Button variant={"secondary"} className="border" onClick={()=>{
+						setPrevPasswords([]);
+					}}>
+						Clear all
+					</Button>
 				</div>
-			</> : <></>}
+				{prevPasswords.length > 0 ? prevPasswords.slice().reverse().map(entry => (
+					<div className="inline-block mr-8 mt-1" key={entry.datetime}>
+						<button 
+							className="inline-block border rounded-md font-mono px-1 text-[90%] hover:border-foreground hover:text-foreground"
+							onClick={()=>{
+								navigator.clipboard.writeText(entry.value);
+								toast({
+									description: 'Password copied to your clipboard!'
+								})
+							}}
+						>
+							{entry.value}
+						</button>
+						<span className="text-muted-foreground text-xs">
+							{" "}&mdash;{" "}
+							{dateTimePretty(entry.datetime)}
+						</span>
+					</div>
+				)) : <></>}
+			</div>
 		</BaseSidebarLayout>
 	);
 }

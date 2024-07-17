@@ -23,7 +23,7 @@ export default function Sidebar() {
 				<Menu size={24} />
 			</Button>
 		</div>}
-		<div className={"bg-white dark:bg-zinc-900 py-2 shadow min-h-screen" + (!isOpen && " hidden")}>
+		<div className={"bg-white dark:bg-zinc-900 py-2 shadow min-h-screen" + (!isOpen && " hidden lg:block")}>
 			<div className="flex place-items-center gap-4 mx-4 py-2">
 				<Link
 					to={"/"}

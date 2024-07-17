@@ -1,17 +1,26 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import Sidebar from "@/features/Sidebar";
 import {RefreshCcw} from "lucide-react";
 import {useEffect, useRef, useState} from "react";
-import {Helmet} from "react-helmet";
 import {useNavigate} from "react-router-dom";
+import BaseSidebarLayout from "./_layout";
+import useLocalStorage from "@/hooks/useLocalStorage";
+import { dateTimePretty } from "@/lib/dateTimeUtils";
+import { useToast } from "@/components/ui/use-toast";
+
+interface PasswordStoreType {
+	datetime: string;
+	value: string;
+}
 
 export default function PasswordGenerator() {
-	const [password, setPassword] = useState("");
-	const [length, setLength] = useState<number | null>(null); // Default length of password
     const copyBtnRef = useRef<HTMLButtonElement>(null);
+	const [password, setPassword] = useState("");
+	const [length, setLength] = useLocalStorage<number>('password-generator-length', 10); // Default length of password
+	const [prevPasswords, setPrevPasswords] = useLocalStorage<PasswordStoreType[]>('password-generator-history', [])
 	const navigate = useNavigate();
+	const {toast} = useToast();
 
 	// Function to generate a random password with at least one lowercase, one uppercase, and one symbol
 	const generatePassword = (len: number) => {
@@ -78,73 +87,109 @@ export default function PasswordGenerator() {
 	};
 
 	return (
-		<>
-			<Helmet>
-				<title>Password Generator</title>
-			</Helmet>
-			<div className="flex relative">
-				<div className="min-w-72 border-r dark:border-zinc-800 h-screen max-h-screen overflow-y-auto static">
-					<Sidebar />
+		<BaseSidebarLayout title="Password Generator">
+            <div className="max-w-lg mx-auto mt-12 flex place-items-center">
+			<div className="bg-white dark:bg-zinc-900 w-full rounded-xl p-8 m-8 shadow-md">
+				<h1 className="text-2xl tracking-tight font-bold">Random Password Generator</h1>
+				<p className="mt-3 text-zinc-700 dark:text-zinc-300 text-sm">
+					Generates a random password containing at least one uppercase, lowercase, number and
+					symbol.
+				</p>
+				<div className="space-y-1 mt-4">
+					<Label>Password Length</Label>
+					<Input
+						type="number"
+						id="lengthInput"
+						value={length || 10}
+						onChange={handleLengthChange}
+						min="8"
+						max="50"
+					/>
 				</div>
-				<div className="max-w-lg mx-auto h-screen flex place-items-center">
-					<div className="bg-white dark:bg-zinc-900 w-full rounded-xl p-8 m-8 shadow-md">
-						<h1 className="text-2xl tracking-tight font-bold">Random Password Generator</h1>
-						<p className="my-3 text-zinc-700 dark:text-zinc-300 text-sm">
-							Generates a random password containing at least one uppercase, lowercase, number and
-							symbol.
-						</p>
-                        <div className="space-y-1">
-                            <Label>Password Length</Label>
-                            <Input
-                                type="number"
-                                id="lengthInput"
-                                value={length || 10}
-                                onChange={handleLengthChange}
-                                min="8"
-                                max="50"
-                            />
-                        </div>
-						<div className="flex place-items-end gap-3 mt-3">
-							<div className="flex-1 space-y-1">
-                                <Label>Generated Password</Label>
-								<Input
-									id="passwordOutput"
-									type="text"
-									value={password}
-									readOnly
-								/>
-							</div>
-							<div>
-								<Button
-									variant={"secondary"}
-									type="button"
-                                    ref={copyBtnRef}
-									onClick={(e) => {
-										navigator.clipboard.writeText(password);
-                                        e.currentTarget.innerHTML = 'Copied';
-									}}
-								>
-                                    Copy
-                                </Button>
-							</div>
-						</div>
+				<div className="flex place-items-end gap-3 mt-4">
+					<div className="flex-1 space-y-1">
+						<Label>Generated Password</Label>
+						<Input
+							id="passwordOutput"
+							type="text"
+							value={password}
+							className="font-mono"
+							readOnly
+						/>
+					</div>
+					<div>
 						<Button
-							variant="default"
+							variant={"secondary"}
 							type="button"
-                            className="flex gap-2 w-full mt-5"
-							onClick={() => {
-								const newPassword = generatePassword(length || 10);
-								setPassword(newPassword);
-                                if (copyBtnRef.current) {
-                                    copyBtnRef.current.innerHTML = 'Copy';
-                                }
+							ref={copyBtnRef}
+							onClick={(e) => {
+								navigator.clipboard.writeText(password);
+								e.currentTarget.innerHTML = 'Copied';
+								toast({
+									description: 'Password copied to your clipboard!'
+								})
+								// Add to previous passwords
+								if (prevPasswords.length > 0 && prevPasswords[prevPasswords.length-1].value !== password) {
+									setPrevPasswords((v) => {
+										if (v.length > 25) {
+											delete v[0];
+										}
+										v.push({
+											datetime: new Date().toISOString(),
+											value: password
+										})
+										return v;
+									});
+								}
 							}}
 						>
-                            <RefreshCcw className="size-4"/><span>Generate</span>
-                        </Button>
+							Copy
+						</Button>
 					</div>
 				</div>
+				<p className="text-sm text-muted-foreground my-1.5">
+					Copying password will add it to your browser's storage.
+				</p>
+				<Button
+					variant="default"
+					type="button"
+					className="flex gap-2 w-full mt-6"
+					onClick={() => {
+						const newPassword = generatePassword(length || 10);
+						setPassword(newPassword);
+						if (copyBtnRef.current) {
+							copyBtnRef.current.innerHTML = 'Copy';
+						}
+					}}
+				>
+					<RefreshCcw className="size-4"/><span>Generate</span>
+				</Button>
 			</div>
-		</>
+			</div>
+			{prevPasswords.length > 0 ? <>
+				<div className="max-w-[90%] m-auto mt-16 mb-8 rounded-md p-6 border">
+					<h2 className="font-medium mb-4">Previous Passwords (upto 25)</h2>
+					{prevPasswords.slice().reverse().map(entry => (
+						<div className="inline-block mr-8 mt-1" key={entry.datetime}>
+							<button 
+								className="inline-block border rounded-md font-mono px-1 text-[90%] hover:border-foreground hover:text-foreground"
+								onClick={()=>{
+									navigator.clipboard.writeText(entry.value);
+									toast({
+										description: 'Password copied to your clipboard!'
+									})
+								}}
+							>
+								{entry.value}
+							</button>
+							<span className="text-muted-foreground text-xs">
+								{" "}&mdash;{" "}
+								{dateTimePretty(entry.datetime)}
+							</span>
+						</div>
+					))}
+				</div>
+			</> : <></>}
+		</BaseSidebarLayout>
 	);
 }

@@ -1,13 +1,13 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import {Button} from "@/components/ui/button";
+import {Input} from "@/components/ui/input";
+import {Label} from "@/components/ui/label";
 import {RefreshCcw} from "lucide-react";
 import {useEffect, useRef, useState} from "react";
 import {useNavigate} from "react-router-dom";
 import BaseSidebarLayout from "./_layout";
 import useLocalStorage from "@/hooks/useLocalStorage";
-import { dateTimePretty } from "@/lib/dateTimeUtils";
-import { useToast } from "@/components/ui/use-toast";
+import {dateTimePretty} from "@/lib/dateTimeUtils";
+import {useToast} from "@/components/ui/use-toast";
 
 interface PasswordStoreType {
 	datetime: string;
@@ -15,10 +15,13 @@ interface PasswordStoreType {
 }
 
 export default function PasswordGenerator() {
-    const copyBtnRef = useRef<HTMLButtonElement>(null);
+	const copyBtnRef = useRef<HTMLButtonElement>(null);
 	const [password, setPassword] = useState("");
-	const [length, setLength] = useLocalStorage<number>('password-generator-length', 10); // Default length of password
-	const [prevPasswords, setPrevPasswords] = useLocalStorage<PasswordStoreType[]>('password-generator-history', [])
+	const [length, setLength] = useLocalStorage<number>("password-generator-length", 10); // Default length of password
+	const [prevPasswords, setPrevPasswords] = useLocalStorage<PasswordStoreType[]>(
+		"password-generator-history",
+		[],
+	);
 	const navigate = useNavigate();
 	const {toast} = useToast();
 
@@ -88,109 +91,125 @@ export default function PasswordGenerator() {
 
 	return (
 		<BaseSidebarLayout title="Password Generator">
-            <div className="max-w-lg mx-auto mt-12 flex place-items-center">
-			<div className="bg-white dark:bg-zinc-900 w-full rounded-xl p-8 m-8 shadow-md">
-				<h1 className="text-2xl tracking-tight font-bold">Random Password Generator</h1>
-				<p className="mt-3 text-zinc-700 dark:text-zinc-300 text-sm">
-					Generates a random password containing at least one uppercase, lowercase, number and
-					symbol.
-				</p>
-				<div className="space-y-1 mt-4">
-					<Label>Password Length</Label>
-					<Input
-						type="number"
-						id="lengthInput"
-						value={length || 10}
-						onChange={handleLengthChange}
-						min="8"
-						max="50"
-					/>
-				</div>
-				<div className="flex place-items-end gap-3 mt-4">
-					<div className="flex-1 space-y-1">
-						<Label>Generated Password</Label>
+			<div className="flex max-w-lg mx-auto mt-12 place-items-center">
+				<div className="w-full p-8 m-8 bg-white shadow-md dark:bg-zinc-900 rounded-xl">
+					<h1 className="text-2xl font-bold tracking-tight">Random Password Generator</h1>
+					<p className="mt-3 text-sm text-zinc-700 dark:text-zinc-300">
+						Generates a random password containing at least one uppercase, lowercase, number and
+						symbol.
+					</p>
+					<div className="mt-4 space-y-1">
+						<Label>Password Length</Label>
 						<Input
-							id="passwordOutput"
-							type="text"
-							value={password}
-							className="font-mono"
-							readOnly
+							type="number"
+							id="lengthInput"
+							value={length || 10}
+							onChange={handleLengthChange}
+							min="8"
+							max="50"
 						/>
 					</div>
-					<div>
-						<Button
-							variant={"secondary"}
-							type="button"
-							ref={copyBtnRef}
-							onClick={(e) => {
-								navigator.clipboard.writeText(password);
-								e.currentTarget.innerHTML = 'Copied';
-								toast({
-									description: 'Password copied to your clipboard!'
-								})
-								// Add to previous passwords
-								if ((prevPasswords.length > 0 && prevPasswords[prevPasswords.length-1].value !== password) || prevPasswords.length === 0) {
-									setPrevPasswords((v) => {
-										v.push({
-											datetime: new Date().toISOString(),
-											value: password
-										})
-										return v;
+					<div className="flex gap-3 mt-4 place-items-end">
+						<div className="flex-1 space-y-1">
+							<Label>Generated Password</Label>
+							<Input
+								id="passwordOutput"
+								type="text"
+								value={password}
+								className="font-mono"
+								readOnly
+							/>
+						</div>
+						<div>
+							<Button
+								variant={"secondary"}
+								type="button"
+								ref={copyBtnRef}
+								onClick={(e) => {
+									navigator.clipboard.writeText(password);
+									e.currentTarget.innerHTML = "Copied";
+									toast({
+										description: "Password copied to your clipboard!",
 									});
-								}
-							}}
-						>
-							Copy
-						</Button>
+									// Add to previous passwords
+									if (
+										(prevPasswords.length > 0 &&
+											prevPasswords[prevPasswords.length - 1].value !== password) ||
+										prevPasswords.length === 0
+									) {
+										setPrevPasswords((v) => {
+											v.push({
+												datetime: new Date().toISOString(),
+												value: password,
+											});
+											return v;
+										});
+									}
+								}}
+							>
+								Copy
+							</Button>
+						</div>
 					</div>
+					<p className="text-sm text-muted-foreground my-1.5">
+						Copying password will add it to your browser's storage.
+					</p>
+					<Button
+						variant="default"
+						type="button"
+						className="flex w-full gap-2 mt-6"
+						onClick={() => {
+							const newPassword = generatePassword(length || 10);
+							setPassword(newPassword);
+							if (copyBtnRef.current) {
+								copyBtnRef.current.innerHTML = "Copy";
+							}
+						}}
+					>
+						<RefreshCcw className="size-4" />
+						<span>Generate</span>
+					</Button>
 				</div>
-				<p className="text-sm text-muted-foreground my-1.5">
-					Copying password will add it to your browser's storage.
-				</p>
-				<Button
-					variant="default"
-					type="button"
-					className="flex gap-2 w-full mt-6"
-					onClick={() => {
-						const newPassword = generatePassword(length || 10);
-						setPassword(newPassword);
-						if (copyBtnRef.current) {
-							copyBtnRef.current.innerHTML = 'Copy';
-						}
-					}}
-				>
-					<RefreshCcw className="size-4"/><span>Generate</span>
-				</Button>
-			</div>
 			</div>
 			<div className="max-w-[90%] m-auto mt-16 mb-8 rounded-md p-6 border">
 				<div className="flex">
-					<h2 className="font-medium mb-4 flex-1">Previous Passwords (upto 25)</h2>
-					<Button variant={"secondary"} className="border" onClick={()=>{
-						setPrevPasswords([]);
-					}}>
+					<h2 className="flex-1 mb-4 font-medium">Previous Passwords</h2>
+					<Button
+						variant={"secondary"}
+						className="border"
+						onClick={() => {
+							setPrevPasswords([]);
+						}}
+					>
 						Clear all
 					</Button>
 				</div>
-				{prevPasswords.length > 0 ? prevPasswords.slice().reverse().map(entry => (
-					<div className="inline-block mr-8 mt-1" key={entry.datetime}>
-						<button 
-							className="inline-block border rounded-md font-mono px-1 text-[90%] hover:border-foreground hover:text-foreground"
-							onClick={()=>{
-								navigator.clipboard.writeText(entry.value);
-								toast({
-									description: 'Password copied to your clipboard!'
-								})
-							}}
-						>
-							{entry.value}
-						</button>
-						<span className="text-muted-foreground text-xs">
-							{" "}&mdash;{" "}
-							{dateTimePretty(entry.datetime)}
-						</span>
-					</div>
-				)) : <></>}
+				{prevPasswords.length > 0 ? (
+					prevPasswords
+						.slice()
+						.reverse()
+						.map((entry) => (
+							<div className="inline-block mt-1 mr-8" key={entry.datetime}>
+								<button
+									className="inline-block border rounded-md font-mono px-1 text-[90%] hover:border-foreground hover:text-foreground"
+									onClick={() => {
+										navigator.clipboard.writeText(entry.value);
+										toast({
+											description: "Password copied to your clipboard!",
+										});
+									}}
+								>
+									{entry.value}
+								</button>
+								<span className="text-xs text-muted-foreground">
+									{" "}
+									&mdash; {dateTimePretty(entry.datetime)}
+								</span>
+							</div>
+						))
+				) : (
+					<></>
+				)}
 			</div>
 		</BaseSidebarLayout>
 	);

@@ -1,7 +1,7 @@
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
-import {RefreshCcw} from "lucide-react";
+import {ClipboardList, RefreshCcw} from "lucide-react";
 import {useEffect, useRef, useState} from "react";
 import {useNavigate} from "react-router-dom";
 import BaseSidebarLayout from "./_layout";
@@ -15,7 +15,7 @@ interface PasswordStoreType {
 }
 
 export default function PasswordGenerator() {
-	const copyBtnRef = useRef<HTMLButtonElement>(null);
+	const copyBtnRef = useRef<HTMLSpanElement>(null);
 	const [password, setPassword] = useState("");
 	const [length, setLength] = useLocalStorage<number>("password-generator-length", 10); // Default length of password
 	const [prevPasswords, setPrevPasswords] = useLocalStorage<PasswordStoreType[]>(
@@ -98,7 +98,7 @@ export default function PasswordGenerator() {
 						Generates a random password containing at least one uppercase, lowercase, number and
 						symbol.
 					</p>
-					<div className="mt-4 space-y-1">
+					<div className="mt-6 space-y-1.5">
 						<Label>Password Length</Label>
 						<Input
 							type="number"
@@ -110,7 +110,7 @@ export default function PasswordGenerator() {
 						/>
 					</div>
 					<div className="flex gap-3 mt-4 place-items-end">
-						<div className="flex-1 space-y-1">
+						<div className="flex-1 space-y-1.5">
 							<Label>Generated Password</Label>
 							<Input
 								id="passwordOutput"
@@ -124,51 +124,64 @@ export default function PasswordGenerator() {
 							<Button
 								variant={"secondary"}
 								type="button"
-								ref={copyBtnRef}
-								onClick={(e) => {
-									navigator.clipboard.writeText(password);
-									e.currentTarget.innerHTML = "Copied";
-									toast({
-										description: "Password copied to your clipboard!",
-									});
-									// Add to previous passwords
-									if (
-										(prevPasswords.length > 0 &&
-											prevPasswords[prevPasswords.length - 1].value !== password) ||
-										prevPasswords.length === 0
-									) {
-										setPrevPasswords((v) => {
-											v.push({
-												datetime: new Date().toISOString(),
-												value: password,
-											});
-											return v;
-										});
+								onClick={() => {
+									const newPassword = generatePassword(length || 10);
+									setPassword(newPassword);
+									if (copyBtnRef.current) {
+										copyBtnRef.current.innerHTML = "Copy and Save to browser";
 									}
 								}}
 							>
-								Copy
+								<RefreshCcw className="size-4" />
 							</Button>
 						</div>
 					</div>
-					<p className="text-sm text-muted-foreground my-1.5">
-						Copying password will add it to your browser's storage.
-					</p>
-					<Button
-						variant="default"
-						type="button"
-						className="flex w-full gap-2 mt-6"
-						onClick={() => {
-							const newPassword = generatePassword(length || 10);
-							setPassword(newPassword);
-							if (copyBtnRef.current) {
-								copyBtnRef.current.innerHTML = "Copy";
-							}
-						}}
-					>
-						<RefreshCcw className="size-4" />
-						<span>Generate</span>
-					</Button>
+					<div className="flex w-full gap-2 mt-8">
+						<Button
+							variant="default"
+							type="button"
+							className="flex-1 flex gap-2"
+							onClick={() => {
+								navigator.clipboard.writeText(password);
+								if (copyBtnRef.current) {
+									copyBtnRef.current.innerHTML = "Copied!";
+								}
+								toast({
+									description: "Password copied to your clipboard!",
+								});
+								// Add to previous passwords
+								if (
+									(prevPasswords.length > 0 &&
+										prevPasswords[prevPasswords.length - 1].value !== password) ||
+									prevPasswords.length === 0
+								) {
+									setPrevPasswords((v) => {
+										v.push({
+											datetime: new Date().toISOString(),
+											value: password,
+										});
+										return v;
+									});
+								}
+							}}
+						>
+							<ClipboardList className="size-4" />
+							<span ref={copyBtnRef}>Copy and Save to browser</span>
+						</Button>
+						<Button
+							variant="outline"
+							type="button"
+							className="bg-transparent"
+							onClick={() => {
+								navigator.clipboard.writeText(password);
+								toast({
+									description: "Password copied to your clipboard!",
+								});
+							}}
+						>
+							<span>Copy only</span>
+						</Button>
+					</div>
 				</div>
 			</div>
 			<div className="max-w-[90%] m-auto mt-16 mb-8 rounded-md p-6 border">

@@ -7,12 +7,19 @@ import BaseSidebarLayout from "./_layout";
 import {Label} from "@/components/ui/label";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
-import {ClipboardList} from "lucide-react";
+import {ClipboardList, Trash2} from "lucide-react";
 import {TOTP} from "totp-generator";
 import {Progress} from "@/components/ui/progress";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+  } from "@/components/ui/tooltip"
+  
 
 interface TOTPEntry {
 	value: string;
@@ -21,7 +28,7 @@ interface TOTPEntry {
 }
 
 const schema = z.object({
-	token: z.string().refine(isAlphaNumeric, {message: 'Token should be alphanumeric only.'}),
+	token: z.string().refine(isAlphaNumeric, {message: 'Token should be alphanumeric only'}),
 	name: z.string(),
 });
 
@@ -34,19 +41,21 @@ export default function TOTPTool() {
 	const [timeRemaining, setTimeRemaining] = useState<number>(0);
 	const navigate = useNavigate();
 	const {toast} = useToast();
-	const otp = TOTP.generate(totp.value);
+	const otp = TOTP.generate(isAlphaNumeric(totp.value) ? totp.value : "incorrect-value");
 	const nextOtp = TOTP.generate(totp.value, {timestamp: otp.expires + 1});
 
 	const {
 		register,
 		handleSubmit,
 		watch,
-		formState: {errors}
+		formState: {errors},
+		setValue
 	} = useForm<z.infer<typeof schema>>({
 		defaultValues: {
 			token: totp.value
 		},
-		resolver: zodResolver(schema)
+		resolver: zodResolver(schema),
+		mode: "all"
 	});
 	const onSubmit: SubmitHandler<z.infer<typeof schema>> = (data) => {
 		if (!prevTotp.find((t) => t.value === totp.value)){
@@ -61,6 +70,9 @@ export default function TOTPTool() {
 			description: "OTP copied to clipboard.",
 		});
 	}
+	useEffect(()=>{
+		setValue("token", totp.value);
+	}, [totp.value])
 
 	// Callback version of watch.
 	useEffect(() => {
@@ -118,9 +130,9 @@ export default function TOTPTool() {
 					</p>
 					<form onSubmit={handleSubmit(onSubmit)}>
 						<div className="mt-6 space-y-1">
-							<Label>Token</Label>
-							<Input type="text" {...register("token")} />
-							<p>{errors.token && errors.token.message && errors.token.message.toString()}</p>
+							<Label className={errors.token ? 'text-red-500 dark:text-red-400' : ''}>Token</Label>
+							<Input className={errors.token ? 'border-red-400' : ''} type="text" {...register("token")} />
+							<p className="text-red-500 dark:text-red-400 text-sm my-2">{errors.token && errors.token.message && errors.token.message.toString()}</p>
 						</div>
 						<div className="mt-6 space-y-1.5">
 							<div className="flex">
@@ -128,23 +140,32 @@ export default function TOTPTool() {
 								<span className="text-xs text-muted-foreground">{Math.floor(timeRemaining)} secs remaining</span>
 							</div>
 							<div className="flex gap-3 place-items-center">
-								<Button
-									className="flex flex-col flex-1 p-0 !pb-0 bg-accent/60"
-									variant={"ghost"}
-									onClick={() => {
-										navigator.clipboard.writeText(otp.otp);
-										toast({
-											description: "OTP copied to clipboard.",
-										});
-									}}
-								>
-									<div className="flex-1 pt-2.5">{otp.otp}</div>
-									<Progress
-										className="h-1 bg-transparent rounded-t-none rounded-b-md"
-										value={timeRemaining}
-										max={30}
-									/>
-								</Button>
+								<TooltipProvider>
+									<Tooltip>
+										<TooltipTrigger className="flex-1">
+											<Button
+												className="flex flex-col w-full p-0 !pb-0 bg-accent/60"
+												variant={"ghost"}
+												onClick={() => {
+													navigator.clipboard.writeText(otp.otp);
+													toast({
+														description: "OTP copied to clipboard.",
+													});
+												}}
+											>
+												<div className="flex-1 pt-1.5 font-normal text-lg">{otp.otp}</div>
+												<Progress
+													className="h-1 bg-transparent rounded-t-none rounded-b-md"
+													value={timeRemaining}
+													max={30}
+												/>
+											</Button>
+										</TooltipTrigger>
+										<TooltipContent>
+											<p>Copy</p>
+										</TooltipContent>
+									</Tooltip>
+								</TooltipProvider>
 								<Button
 									variant={"ghost"}
 									className="text-muted-foreground"
@@ -211,23 +232,59 @@ export default function TOTPTool() {
 					prevTotp
 						.slice()
 						.reverse()
-						.map((entry) => (
-							<div className="inline-block mt-1 mr-8" key={entry.datetime}>
-								<button
-									className="inline-block border rounded-md font-mono px-1 text-[90%] hover:border-foreground hover:text-foreground"
-									onClick={() => {
-										setTotp(entry);
-										toast({
-											description: "TOTP inserted into the tool.",
-										});
-									}}
-								>
-									{entry.name ? entry.name + ` (${entry.value.slice(0,4)}..)` : entry.value}
-								</button>
+						.map((entry, index) => (
+							<div className="inline-flex place-items-center gap-2 mr-8 hover:bg-white/70 dark:hover:bg-zinc-950 p-1 rounded-lg" key={entry.datetime}>
+								<TooltipProvider>
+									<Tooltip>
+										<TooltipTrigger>
+											<button
+												className="inline-block border rounded-md font-mono px-1 text-[95%] hover:border-foreground hover:text-foreground"
+												onClick={() => {
+													setTotp(entry);
+													setValue("token", entry.value);
+													setValue("name", entry.name || '');
+													
+													toast({
+														description: "TOTP inserted into the tool.",
+													});
+												}}
+											>
+												{entry.name ? entry.name + ` (${entry.value.slice(0,4)}..)` : entry.value}
+											</button>
+										</TooltipTrigger>
+										<TooltipContent>
+											<p>Click to insert</p>
+										</TooltipContent>
+									</Tooltip>
+								</TooltipProvider>
 								<span className="text-xs text-muted-foreground">
-									{" "}
+
 									&mdash; {dateTimePretty(entry.datetime)}
 								</span>
+								<TooltipProvider>
+									<Tooltip>
+										<TooltipTrigger>
+											<Button
+												variant={"destructive"}
+												size={"sm"}
+												className="aspect-square size-6 p-0 opacity-30 hover:opacity-100"
+												onClick={()=>{
+													let newArr = prevTotp.slice().reverse();
+													console.log(JSON.stringify(newArr));
+													console.log(index);
+													newArr.splice(index, 1);
+													console.log(newArr);
+													setPrevTotp(newArr.reverse());
+												}}
+											>
+												<Trash2 size={16} />
+											</Button>
+										</TooltipTrigger>
+										<TooltipContent>
+											<p>Delete</p>
+										</TooltipContent>
+									</Tooltip>
+								</TooltipProvider>
 							</div>
 						))
 				) : (

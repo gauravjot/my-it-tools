@@ -146,6 +146,7 @@ export default function TOTPTool() {
 											<Button
 												className="flex flex-col w-full p-0 !pb-0 bg-accent/60"
 												variant={"ghost"}
+												type="button"
 												onClick={() => {
 													navigator.clipboard.writeText(otp.otp);
 													toast({
@@ -169,6 +170,7 @@ export default function TOTPTool() {
 								<Button
 									variant={"ghost"}
 									className="text-muted-foreground"
+									type="button"
 									onClick={() => {
 										navigator.clipboard.writeText(nextOtp.otp);
 										toast({

@@ -123,7 +123,7 @@ export default function TOTPTool() {
 	return (
 		<BaseSidebarLayout title="TOTP Tool">
 			<div className="flex max-w-lg mx-auto mt-12 place-items-center">
-				<div className="w-full p-8 m-8 bg-white shadow-md dark:bg-zinc-900 rounded-xl">
+				<div className="w-full p-8 m-4 lg:m-8 bg-white shadow-md dark:bg-zinc-900 rounded-xl">
 					<h1 className="text-2xl font-bold tracking-tight">TOTP tool</h1>
 					<p className="mt-3 text-sm text-zinc-700 dark:text-zinc-300">
 						Enter the token to see your one-time password and copy it to your clipboard.

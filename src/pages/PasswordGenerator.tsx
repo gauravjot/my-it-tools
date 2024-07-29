@@ -92,7 +92,7 @@ export default function PasswordGenerator() {
 	return (
 		<BaseSidebarLayout title="Password Generator">
 			<div className="flex max-w-lg mx-auto mt-12 place-items-center">
-				<div className="w-full p-8 m-8 bg-white shadow-md dark:bg-zinc-900 rounded-xl">
+				<div className="w-full p-8 m-4 lg:m-8 bg-white shadow-md dark:bg-zinc-900 rounded-xl">
 					<h1 className="text-2xl font-bold tracking-tight">Random Password Generator</h1>
 					<p className="mt-3 text-sm text-zinc-700 dark:text-zinc-300">
 						Generates a random password containing at least one uppercase, lowercase, number and

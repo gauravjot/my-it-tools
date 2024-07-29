@@ -58,7 +58,7 @@ export default function JobApplicationTrackerTool() {
 
 	return (
 		<BaseSidebarLayout title="Job Application Tracker">
-            <div className="m-8 flex flex-col lg:flex-row">
+            <div className="m-4 lg:m-8 flex flex-col lg:flex-row">
                 <h1 className="text-2xl flex-1 font-bold tracking-tight">Job Application Tracking Tool</h1>
                 <div className="flex gap-4">
                     <DropdownMenu>

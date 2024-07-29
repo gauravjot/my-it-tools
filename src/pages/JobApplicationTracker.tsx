@@ -18,18 +18,25 @@ import {
     TableRow,
   } from "@/components/ui/table"
 import { dateTimePretty } from "@/lib/dateTimeUtils";
-  
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import exportFromJSON from 'export-from-json';
+import React from "react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuTrigger, DropdownMenuItem } from "@/components/ui/dropdown-menu";
+
+const STATUSES = ['submitted', 'interview', 'offer', 'ghosted', 'declined'];
 
 const schema = z.object({
 	role: z.string().min(2),
     company: z.string().min(2),
     application_detail_url: z.string().url().optional(),
     portal_url: z.string().url().optional(),
-    date: z.string()
+    date: z.string(),
+    status: z.enum(['submitted', 'interview', 'offer', 'ghosted', 'declined'])
 });
 
 export default function JobApplicationTrackerTool() {
 	const [jobApps, setJobApps] = useLocalStorage<z.infer<typeof schema>[]>("job_tracker_applications", []);
+    const [statusFilter, setStatusFilter] = useLocalStorage<z.infer<typeof schema>['status'] | null>("job_tracker_status_filter", null);
 	const {toast} = useToast();
 
 	const form = useForm<z.infer<typeof schema>>({
@@ -42,6 +49,7 @@ export default function JobApplicationTrackerTool() {
 	const onSubmit: SubmitHandler<z.infer<typeof schema>> = (data) => {
 		if (!jobApps.find((t) => t.role+t.company === data.role+data.company)){
 			setJobApps([...jobApps, data]);
+            form.reset();
 		}
 		toast({
 			description: "Job application has been added!",
@@ -52,23 +60,92 @@ export default function JobApplicationTrackerTool() {
 		<BaseSidebarLayout title="Job Application Tracker">
             <div className="m-8 flex flex-col lg:flex-row">
                 <h1 className="text-2xl flex-1 font-bold tracking-tight">Job Application Tracking Tool</h1>
+                <div className="flex gap-4">
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant={statusFilter ? "default" : "outline"}>
+                                {statusFilter ? "Filter: " + statusFilter :  "Set Status Filter"}
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuGroup>
+                                <DropdownMenuItem 
+                                    className="py-2 pl-3"
+                                    onClick={() => {
+                                        setStatusFilter(null);
+                                    }}
+                                >
+                                    None
+                                </DropdownMenuItem>
+                                {STATUSES.map((status) => 
+                                    <DropdownMenuItem 
+                                        className="py-1"
+                                        onClick={() => {
+                                            setStatusFilter(status as any);
+                                        }}
+                                    >
+                                        <StatusBadge status={status as any} />
+                                    </DropdownMenuItem>
+                                )}
+                            </DropdownMenuGroup>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                    <Button
+                        variant={"outline"}
+                        onClick={()=>{
+                            const data = jobApps
+                            const fileName = 'job-applications-'+(new Date()).toISOString()
+                            const exportType =  exportFromJSON.types.csv
+                            exportFromJSON({ data, fileName, exportType })
+                        }}
+                        disabled={jobApps.length === 0}
+                    >
+                        Export CSV
+                    </Button>
+                </div>
             </div>
             <div className="flex flex-col xl:flex-row m-8 gap-4 max-w-[2000px]">
                 <div className="flex-1 order-2 xl:order-1 bg-white shadow-md dark:bg-zinc-900 rounded-xl">
                     <Table>
                         <TableHeader>
                             <TableRow>
-                            <TableHead>Role</TableHead>
-                            <TableHead>Company</TableHead>
+                            <TableHead>Role &mdash; Company</TableHead>
+                            <TableHead>Status</TableHead>
                             <TableHead>Date</TableHead>
                             <TableHead>Links</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {jobApps.map((application, index) => (
+                            {jobApps.filter((app) => (statusFilter) ? app.status === statusFilter : true).map((application) => (
                                 <TableRow key={application.role+application.company+application.date}>
-                                    <TableCell className="font-medium min-w-[200px]">{application.role}</TableCell>
-                                    <TableCell>{application.company}</TableCell>
+                                    <TableCell className="font-medium min-w-[200px]">{application.role} &mdash; {application.company}</TableCell>
+                                    <TableCell className="w-[130px]">
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <button>
+                                                    <StatusBadge className="cursor-pointer select-none" status={application.status}/>
+                                                </button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="start">
+                                                <DropdownMenuGroup>
+                                                    {STATUSES.map((status) => 
+                                                        <DropdownMenuItem 
+                                                            className="py-1"
+                                                            onClick={() => {
+                                                                let newArr = jobApps.slice();
+                                                                let index = newArr.findIndex((a) => a.role+a.company+a.date === application.role+application.company+application.date);
+                                                                let row = newArr.splice(index, 1)[0];
+                                                                row.status = status as any;
+                                                                setJobApps([...newArr.slice(0, index), row, ...newArr.slice(index)]);
+                                                            }}
+                                                        >
+                                                            <StatusBadge status={status as any} />
+                                                        </DropdownMenuItem>
+                                                    )}
+                                                </DropdownMenuGroup>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </TableCell>
                                     <TableCell className="text-sm text-muted-foreground">{dateTimePretty(application.date)}</TableCell>
                                     <TableCell className="flex place-items-center w-full gap-4">
                                         <div className="flex-1 text-sm text-muted-foreground">
@@ -77,9 +154,8 @@ export default function JobApplicationTrackerTool() {
                                                 :
                                                 <></>
                                             }
-                                            {" • "}
                                             {application.portal_url && application.portal_url.length > 0 ? 
-                                                <a href={application.portal_url} target="_blank">Portal Link</a> 
+                                                <>{" • "}<a href={application.portal_url} target="_blank">Portal Link</a></>
                                                 :
                                                 <></>
                                             }
@@ -89,6 +165,7 @@ export default function JobApplicationTrackerTool() {
                                             className="bg-zinc-200 dark:bg-zinc-800 hover:bg-destructive dark:hover:bg-destructive hover:text-white aspect-square !p-1 size-7"
                                             onClick={() => {
                                                 let newArr = jobApps.slice();
+                                                let index = newArr.findIndex((a) => a.role+a.company+a.date === application.role+application.company+application.date);
                                                 newArr.splice(index, 1);
                                                 setJobApps(newArr);
                                             }}
@@ -165,6 +242,29 @@ export default function JobApplicationTrackerTool() {
                                     </FormItem>
                                 )}
                             />
+                            <FormField
+                                control={form.control}
+                                name="status"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Status</FormLabel>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select application status" />
+                                            </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                            <SelectItem value="submitted">Submitted</SelectItem>
+                                            <SelectItem value="interview">Interview phase</SelectItem>
+                                            <SelectItem value="offer">Offer received</SelectItem>
+                                            <SelectItem value="ghosted">Ghosted</SelectItem>
+                                            <SelectItem value="declined">Declined</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </FormItem>
+                                )}
+                            />
                             <div className="p-px"></div>
                             <Button
                                 variant="default"
@@ -181,4 +281,19 @@ export default function JobApplicationTrackerTool() {
             </div>
 		</BaseSidebarLayout>
 	);
+}
+
+interface StatusBadgeProps extends React.HTMLAttributes<HTMLDivElement> {
+    status: "submitted" | "interview" | "offer" | "ghosted" | "declined";
+}
+
+function StatusBadge({status, ...props}: StatusBadgeProps) {
+    return (
+        <div {...props}>
+            <div className="border-muted hover:bg-muted-foreground/20 border rounded-full px-2 py-1 text-sm text-foreground/80 inline-flex gap-2 place-items-center">
+                <div className={"size-2 rounded-full " + (status === "submitted" ? "bg-blue-500" : status === "interview" ? "bg-teal-500" : status === "declined" ? "bg-red-500" : status === "ghosted" ? "bg-zinc-500" : "bg-green-500")}></div>
+                {status}
+            </div>
+        </div>
+        )
 }

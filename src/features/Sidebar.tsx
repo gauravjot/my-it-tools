@@ -1,6 +1,6 @@
 import {Button} from "@/components/ui/button";
 import ThemeToggler from "@/components/utils/ThemeToggler";
-import {Key, Menu, RectangleEllipsis, X} from "lucide-react";
+import {BriefcaseBusiness, Key, Menu, RectangleEllipsis, X} from "lucide-react";
 import {useState} from "react";
 import {Link} from "react-router-dom";
 
@@ -14,6 +14,11 @@ const links = [
 		name: "TOTP Tool",
 		to: "/totp-tool",
 		icon: <RectangleEllipsis size={14} strokeWidth={3} />,
+	},
+	{
+		name: "Job Application Tracker",
+		to: "/job-application-tracker",
+		icon: <BriefcaseBusiness size={14} strokeWidth={3} />,
 	},
 ];
 

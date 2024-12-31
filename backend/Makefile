@@ -21,7 +21,7 @@ superuser:
 getready: venv resetdb
 
 run:
-	.venv/bin/python manage.py runserver 0.0.0.0:8001
+	.venv/bin/python manage.py runserver 0.0.0.0:8000
 
 su:
 	.venv/bin/python manage.py createsuperuser

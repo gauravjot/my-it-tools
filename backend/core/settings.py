@@ -46,6 +46,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -89,34 +90,68 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # Axor
 AXOR_AUTH = dict(
     # General
-    APP_NAME = "My Toolkit",
-    FRONTEND_URL = "http://localhost:5173",
-    URI_PREFIX = "/api", # URI prefix for all API endpoints
+    APP_NAME="My Toolkit",
+    FRONTEND_URL="http://localhost:5173",
+    URI_PREFIX="/api",  # URI prefix for all API endpoints
 
     # Cookies
-    AUTH_COOKIE_NAME = 'toolkit_auth',
-    AUTH_COOKIE_AGE = 60 * 60 * 24 * 90,  # 90 days
-    AUTH_COOKIE_SECURE = True,
-    AUTH_COOKIE_SAMESITE = 'Strict',
-    AUTH_COOKIE_DOMAIN = 'localhost',
+    AUTH_COOKIE_NAME='toolkit_auth',
+    AUTH_COOKIE_AGE=60 * 60 * 24 * 90,  # 90 days
+    AUTH_COOKIE_SECURE=True,
+    AUTH_COOKIE_SAMESITE='Strict',
+    AUTH_COOKIE_DOMAIN='localhost',
 
     # Forgot password
-    FORGET_PASSWORD_LINK_TIMEOUT = 30, # in minutes
-    FORGET_PASSWORD_LOCKOUT_TIME = 24, # in hours
+    FORGET_PASSWORD_LINK_TIMEOUT=30,  # in minutes
+    FORGET_PASSWORD_LOCKOUT_TIME=24,  # in hours
 
     # TOTP
-    TOTP_NUM_OF_BACKUP_CODES = 8,
-    TOTP_BACKUP_CODE_LENGTH = 8,
+    TOTP_NUM_OF_BACKUP_CODES=8,
+    TOTP_BACKUP_CODE_LENGTH=8,
 
     # Email
-    SMTP_USE_TLS = True,
-    SMTP_USE_SSL = False,
-    SMTP_HOST = "smtp.office365.com",
-    SMTP_PORT = 587,
-    SMTP_USER = "your_email",
-    SMTP_PASSWORD = "your_password",
-    SMTP_DEFAULT_SEND_FROM = "no-reply@your_domain.com",
+    SMTP_USE_TLS=True,
+    SMTP_USE_SSL=False,
+    SMTP_HOST="smtp.office365.com",
+    SMTP_PORT=587,
+    SMTP_USER="your_email",
+    SMTP_PASSWORD="your_password",
+    SMTP_DEFAULT_SEND_FROM="no-reply@your_domain.com",
 )
+
+# CORS
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8000",
+    "http://localhost:5173",
+]
+
+CORS_ORIGIN_WHITELIST = CORS_ALLOWED_ORIGINS
+
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:8000',
+    'http://localhost:5173',
+]
+
+CORS_ALLOW_HEADERS = (
+    "accept",
+    "authorization",
+    "content-type",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+)
+
+CORS_ALLOW_CREDENTIALS = True
 
 
 # Database

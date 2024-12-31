@@ -1,4 +1,4 @@
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcHBfdG9rZW4iOiJiVzFZWlVoQ1pUWnJRVlphVDA5SVh6RjZaWEZNTFVKSlpYcFlNV05sZHpWQ2VFTm1ZVEZmWkhodVRtRlRiVVpVWnpSd1kwOTZMVlJoVUcxMmVXSjJVMFkzTTFCWlNETXpVbnBaZEdSeGEyeEVlRGRPZUdjIn0.4d8-QnnyKRyvMOWrHEdelDuX7ZgUhLGYa_18ElXoTJQ
+@token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcHBfdG9rZW4iOiJja3BJVkRaNVVYSmFhRzlKT0dock4zUldNRlV3TFVVMU5WUXhVbTFpZGpFMUxYUkhOVkZJUWxCME5XdE1MV2hJT1ZoRk5VTTVTSFJYWVZwWVUxOW1UVmRvZG05WmJqRktTMEpvU2tJeGR6a3hkSEp6Y1hjIn0.f0BawnFLAjUPDR4tZ8CII-f-gUtfq3QSqMSEdxcjWgA
 
 
 ### Login
@@ -20,7 +20,7 @@ X-Requested-By: mobile
 {
     "amount": 1000,
     "description": "Salary",
-    "date": "2021-09-01"
+    "date": "2024-12-01"
 }
 
 
@@ -37,9 +37,9 @@ Authorization: {{ token }}
 X-Requested-By: mobile
 
 {
-    "amount": 10,
-    "name": "Netflix",
-    "date": "2021-09-01",
+    "amount": 250,
+    "name": "Car Insurance",
+    "date": "2024-12-31",
     "repeat": true,
     "repeat_interval": "monthly",
     "tags": ["Entertainment"]

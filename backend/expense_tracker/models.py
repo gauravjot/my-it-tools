@@ -1,10 +1,11 @@
+import uuid
 from django.db import models
 from django.utils.timezone import now
 from django_axor_auth.users.models import User
 
-# Create your models here.
 
 class Income(models.Model):
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 	amount = models.FloatField()
 	date = models.DateField()
 	added_at = models.DateTimeField(default=now)
@@ -12,6 +13,7 @@ class Income(models.Model):
 
 
 class Expense(models.Model):
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 	repeat_choices = [
 		('daily', 'Daily'),
 		('weekly', 'Weekly'),
@@ -29,6 +31,7 @@ class Expense(models.Model):
 
 
 class ExpenseTags(models.Model):
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 	name = models.CharField(max_length=255)
-	expense = models.ForeignKey(Expense, on_delete=models.CASCADE)
+	expense_id = models.ForeignKey(Expense, on_delete=models.CASCADE, related_name='tags')
 	user = models.ForeignKey(User, on_delete=models.CASCADE)

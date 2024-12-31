@@ -1,0 +1,58 @@
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcHBfdG9rZW4iOiJiVzFZWlVoQ1pUWnJRVlphVDA5SVh6RjZaWEZNTFVKSlpYcFlNV05sZHpWQ2VFTm1ZVEZmWkhodVRtRlRiVVpVWnpSd1kwOTZMVlJoVUcxMmVXSjJVMFkzTTFCWlNETXpVbnBaZEdSeGEyeEVlRGRPZUdjIn0.4d8-QnnyKRyvMOWrHEdelDuX7ZgUhLGYa_18ElXoTJQ
+
+
+### Login
+POST http://localhost:8000/api/user/login/
+X-Requested-By: mobile
+Content-Type: application/json
+
+{
+    "email": "john@test.com",
+    "password": "Pass1234!"
+}
+
+### Add Income
+POST http://localhost:8000/api/expense_tracker/add_income/
+Content-Type: application/json
+Authorization: {{ token }}
+X-Requested-By: mobile
+
+{
+    "amount": 1000,
+    "description": "Salary",
+    "date": "2021-09-01"
+}
+
+
+### Get Incomes
+GET http://localhost:8000/api/expense_tracker/get_incomes/2021-09-01/2022-10-01/
+Content-Type: application/json
+Authorization: {{ token }}
+
+
+### Add Expense
+POST http://localhost:8000/api/expense_tracker/add_expense/
+Content-Type: application/json
+Authorization: {{ token }}
+X-Requested-By: mobile
+
+{
+    "amount": 10,
+    "name": "Netflix",
+    "date": "2021-09-01",
+    "repeat": true,
+    "repeat_interval": "monthly",
+    "tags": ["Entertainment"]
+}
+
+
+### Get Expenses
+GET http://localhost:8000/api/expense_tracker/get_expenses/2021-09-01/2022-10-01/
+Content-Type: application/json
+Authorization: {{ token }}
+
+
+### Get Expense Tags
+GET http://localhost:8000/api/expense_tracker/get_expense_tags/
+Content-Type: application/json
+Authorization: {{ token }}

@@ -1,5 +1,6 @@
 from decouple import config
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -12,7 +13,6 @@ SECRET_KEY = config('DJANGO_SECRET_KEY')
 DEBUG = config('DJANGO_DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = ['*']
-
 
 # Application definition
 
@@ -96,6 +96,26 @@ AXOR_AUTH = dict(
     SMTP_PASSWORD=config('SMTP_PASSWORD', default=None),
     SMTP_DEFAULT_SEND_FROM=config('SMTP_DEFAULT_SEND_FROM', default=None),
 )
+# Set the origins that Axor API will respond to.
+# To set all origins, use value ['*']
+ALLOW_ORIGINS = [config('FRONTEND_URL')]
+
+# Logging
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'DEBUG'),
+        },
+    },
+}
 
 # CORS
 CORS_ALLOWED_ORIGINS = [

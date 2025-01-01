@@ -3,5 +3,5 @@
  * are useful throughout the application.
  */
 
-export const BACKEND_ENDPOINT = "http://localhost:8000";
-export const FRONTEND_ENDPOINT = "http://localhost:5173";
+export const BACKEND_ENDPOINT = import.meta.env.VITE_BACKEND_BASE_URL;
+export const FRONTEND_ENDPOINT = import.meta.env.VITE_FRONTEND_BASE_URL;

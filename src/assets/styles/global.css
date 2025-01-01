@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 @font-face {
-	font-family: 'Geist';
-	src: url('/GeistVF.woff');
+	font-family: "Geist";
+	src: url("/GeistVF.woff");
 	font-weight: 100 900;
 }
 
@@ -35,7 +35,7 @@
 		--destructive-foreground: 0 0% 98%;
 
 		--border: 240 5.9% 90%;
-		--input: 240 5.9% 90%;
+		--input: 240 5.9% 80%;
 		--ring: 240 10% 3.9%;
 
 		--radius: 0.5rem;
@@ -93,6 +93,16 @@
 	a {
 		@apply text-accent-foreground;
 	}
+}
+
+.flex-wrap {
+	flex-wrap: wrap;
+}
+.pl-2 {
+	padding-left: 0.5rem;
+}
+.border-input {
+	border: hsl(var(--input)) 1px solid;
 }
 
 /*

@@ -27,7 +27,7 @@ import {CalendarIcon} from "lucide-react";
 
 const schema = z.object({
 	name: z.string().min(1).max(255),
-	amount: z.preprocess((a) => parseInt(z.string().parse(a), 0), z.number().min(0)),
+	amount: z.preprocess((a) => parseFloat(z.string().parse(a)), z.number().min(0)),
 	date: z.date(),
 });
 

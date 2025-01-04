@@ -173,6 +173,8 @@ def get_database():
 
 DATABASES = get_database()
 
+# Email
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators

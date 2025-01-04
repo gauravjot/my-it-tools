@@ -156,8 +156,8 @@ export default function ExpenseTrackerPage() {
 									.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 									.map((entry: IncomeType | ExpenseType) => (
 										<div key={entry.id} className="py-3">
-											<div className="grid grid-cols-3">
-												<div className="leading-5">
+											<div className="grid grid-cols-4 sm:grid-cols-3">
+												<div className="leading-5 col-span-2 sm:col-span-1">
 													<div
 														className={
 															((entry as ExpenseType).tags != undefined

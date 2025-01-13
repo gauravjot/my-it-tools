@@ -12,6 +12,7 @@ import {Button} from "@/components/ui/button";
 import {Plus} from "lucide-react";
 import AddIncomeDialog from "@/features/expense_tracker/AddIncomeDialog";
 import AddExpenseDialog from "@/features/expense_tracker/AddExpenseDialog";
+import {getRandomBgColor} from "@/lib/randomBgColor";
 
 export default function ExpenseTrackerPage() {
 	const user = useContext(UserContext);
@@ -158,29 +159,50 @@ export default function ExpenseTrackerPage() {
 										<div key={entry.id} className="py-3">
 											<div className="grid grid-cols-4 sm:grid-cols-3">
 												<div className="leading-5 col-span-2 sm:col-span-1">
+													<div>
+														<div
+															className={
+																((entry as ExpenseType).tags != undefined
+																	? "text-foreground"
+																	: "text-green-700 dark:text-green-400") + " font-medium truncate"
+															}
+														>
+															{entry.name ?? "No name"}
+														</div>
+														{(entry as ExpenseType).tags != undefined ? (
+															<>
+																<div className="text-sm mt-1 text-white opacity-80 flex gap-1 flex-wrap leading-4">
+																	{(entry as ExpenseType).tags.map((tag) => (
+																		<span
+																			className={`${getRandomBgColor(
+																				tag.name
+																			)} bg-muted px-2 rounded-full py-1`}
+																		>
+																			{tag.name}
+																		</span>
+																	))}
+																</div>
+															</>
+														) : (
+															<></>
+														)}
+													</div>
+												</div>
+												<div>
 													<div
 														className={
-															((entry as ExpenseType).tags != undefined
+															(entry as ExpenseType).tags != undefined
 																? "text-foreground"
-																: "text-green-700 dark:text-green-400") + " font-medium truncate"
+																: "text-green-700 dark:text-green-400"
 														}
 													>
-														{entry.name ?? "No name"}
+														${formateCurrency(entry.amount)}
 													</div>
-													<div className="text-muted-foreground text-sm">
+													<div className="text-muted-foreground text-xs">
 														{(entry as ExpenseType).tags != undefined ? "Expense" : "Income"}
 													</div>
 												</div>
-												<div
-													className={
-														((entry as ExpenseType).tags != undefined
-															? "text-foreground"
-															: "text-green-700 dark:text-green-400") + " flex place-items-center"
-													}
-												>
-													${formateCurrency(entry.amount)}
-												</div>
-												<div className="text-muted-foreground text-sm flex place-items-center justify-end">
+												<div className="text-muted-foreground text-sm flex justify-end">
 													{format(parse(entry.date, "yyyy-MM-dd", new Date()), "MMM d, yyyy")}
 												</div>
 											</div>

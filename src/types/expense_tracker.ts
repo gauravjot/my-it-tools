@@ -15,6 +15,8 @@ export interface ExpenseType {
 	added_at: string;
 	user: string;
 	tags: ExpenseTagType[];
+	repeat: boolean;
+	repeat_interval: string;
 }
 
 export interface ExpenseTagType {

@@ -32,6 +32,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import TagInput from "@/components/ui/custom/tag-input";
 
 const schema = z.object({
 	name: z.string().min(1).max(255),
@@ -175,20 +176,18 @@ export default function AddExpenseDialog({
 								)}
 							/>
 						</div>
-						{/*
 						<FormField
 							control={form.control}
 							name="tags"
 							render={({field}) => (
 								<FormItem className="flex flex-col items-start">
 									<FormLabel className="text-left">Tags</FormLabel>
-									<FormControl>
-                  </FormControl>
+									<TagInput setValue={field.onChange} />
+									<FormControl></FormControl>
 									<FormMessage />
 								</FormItem>
 							)}
 						/>
-            */}
 						<div className="space-y-4 border rounded p-2 bg-gray-400/10">
 							<FormField
 								control={form.control}

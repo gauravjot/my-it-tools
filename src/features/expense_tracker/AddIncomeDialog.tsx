@@ -81,7 +81,12 @@ export default function AddIncomeDialog({
 	return (
 		<Dialog>
 			<DialogTrigger asChild>{children}</DialogTrigger>
-			<DialogContent className="sm:max-w-[425px]">
+			<DialogContent
+				className="sm:max-w-[425px]"
+				onInteractOutside={(e) => {
+					e.preventDefault();
+				}}
+			>
 				<DialogHeader>
 					<DialogTitle>Add Income</DialogTitle>
 					<DialogDescription>
@@ -157,11 +162,6 @@ export default function AddIncomeDialog({
 							/>
 						</div>
 						<DialogFooter>
-							<DialogClose asChild>
-								<Button variant="secondary" ref={cancelBtn} className="mt-2">
-									Cancel
-								</Button>
-							</DialogClose>
 							<Button type="submit" className="mt-2">
 								Add Income
 							</Button>

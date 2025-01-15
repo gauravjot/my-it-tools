@@ -171,14 +171,14 @@ export default function ExpenseTrackerPage() {
 														</div>
 														{(entry as ExpenseType).tags != undefined ? (
 															<>
-																<div className="text-sm mt-1 text-white opacity-80 flex gap-1 flex-wrap leading-4">
+																<div className="text-sm mt-1 text-white opacity-90 flex gap-1 flex-wrap leading-4">
 																	{(entry as ExpenseType).tags.map((tag) => (
 																		<span
 																			className={`${getRandomBgColor(
-																				tag.name
-																			)} bg-muted px-2 rounded-full py-1`}
+																				tag.name.toUpperCase()
+																			)} px-2 rounded-full py-1`}
 																		>
-																			{tag.name}
+																			{tag.name.toUpperCase()}
 																		</span>
 																	))}
 																</div>

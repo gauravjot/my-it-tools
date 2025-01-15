@@ -101,7 +101,12 @@ export default function AddExpenseDialog({
 	return (
 		<Dialog>
 			<DialogTrigger asChild>{children}</DialogTrigger>
-			<DialogContent className="sm:max-w-[425px]">
+			<DialogContent
+				className="sm:max-w-[425px]"
+				onInteractOutside={(e) => {
+					e.preventDefault();
+				}}
+			>
 				<DialogHeader>
 					<DialogTitle>Add Expense</DialogTitle>
 					<DialogDescription>
@@ -267,11 +272,6 @@ export default function AddExpenseDialog({
 							/>
 						</div>
 						<DialogFooter>
-							<DialogClose asChild>
-								<Button variant="secondary" ref={cancelBtn} className="mt-2">
-									Cancel
-								</Button>
-							</DialogClose>
 							<Button type="submit" className="mt-2">
 								Add Expense
 							</Button>

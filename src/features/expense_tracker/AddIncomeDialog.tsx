@@ -16,7 +16,6 @@ import {Input} from "@/components/ui/input";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {cn} from "@/lib/utils";
 import {Calendar} from "@/components/ui/calendar";
-import {DialogClose} from "@radix-ui/react-dialog";
 import {addIncome} from "@/services/expense_tracker/add_income";
 import {DateRange} from "react-day-picker";
 import {useMutation, useQueryClient} from "@tanstack/react-query";

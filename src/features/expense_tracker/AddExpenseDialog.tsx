@@ -4,6 +4,7 @@ import {zodResolver} from "@hookform/resolvers/zod";
 import {toast} from "@/components/ui/use-toast";
 import {
 	Dialog,
+	DialogClose,
 	DialogContent,
 	DialogDescription,
 	DialogFooter,
@@ -271,6 +272,11 @@ export default function AddExpenseDialog({
 							/>
 						</div>
 						<DialogFooter>
+							<DialogClose asChild>
+								<Button variant="secondary" ref={cancelBtn} className="mt-2 hidden">
+									Cancel
+								</Button>
+							</DialogClose>
 							<Button type="submit" className="mt-2">
 								Add Expense
 							</Button>

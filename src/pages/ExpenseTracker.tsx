@@ -2,17 +2,25 @@ import React, {useContext} from "react";
 import BaseSidebarLayout from "@/pages/_layout.tsx";
 import {DateRange} from "react-day-picker";
 import DateRangePicker from "@/features/expense_tracker/DateRangePicker.tsx";
-import {useQuery} from "@tanstack/react-query";
+import {useMutation, useQuery} from "@tanstack/react-query";
 import {getIncomes} from "@/services/expense_tracker/get_incomes";
 import {format, parse} from "date-fns";
 import {getExpenses} from "@/services/expense_tracker/get_expenses";
 import {ExpenseType, IncomeType} from "@/types/expense_tracker";
 import {UserContext} from "@/App";
 import {Button} from "@/components/ui/button";
-import {Plus} from "lucide-react";
+import {EllipsisVertical, Plus, Trash2} from "lucide-react";
 import AddIncomeDialog from "@/features/expense_tracker/AddIncomeDialog";
 import AddExpenseDialog from "@/features/expense_tracker/AddExpenseDialog";
 import {getRandomBgColor} from "@/lib/randomBgColor";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {deleteExpense} from "@/services/expense_tracker/delete_expense";
+import {toast} from "@/components/ui/use-toast";
 
 export default function ExpenseTrackerPage() {
 	const user = useContext(UserContext);
@@ -59,6 +67,25 @@ export default function ExpenseTrackerPage() {
 				.reverse()
 		: [];
 	const nextExpense = upcomingExpenses && upcomingExpenses.length > 0 ? upcomingExpenses[0] : null;
+
+	const deleteExpenseMutation = useMutation({
+		mutationKey: ["deleteExpense"],
+		mutationFn: async (id: string) => await deleteExpense(id),
+		onSuccess: () => {
+			// Show success toast
+			toast({
+				description: "Expense deleted!",
+			});
+			// reset expense query
+			expenseQuery.refetch();
+		},
+		onError: (error) => {
+			toast({
+				description: error instanceof Error ? error.message : "An error occurred",
+				variant: "destructive",
+			});
+		},
+	});
 
 	return (
 		<BaseSidebarLayout title={"Expense Tracker"}>
@@ -202,8 +229,32 @@ export default function ExpenseTrackerPage() {
 														{(entry as ExpenseType).tags != undefined ? "Expense" : "Income"}
 													</div>
 												</div>
-												<div className="text-muted-foreground text-sm flex justify-end">
-													{format(parse(entry.date, "yyyy-MM-dd", new Date()), "MMM d, yyyy")}
+												<div className="text-muted-foreground text-sm flex place-items-center justify-end">
+													<div>
+														{format(parse(entry.date, "yyyy-MM-dd", new Date()), "MMM d, yyyy")}
+													</div>
+													<div>
+														<DropdownMenu>
+															<DropdownMenuTrigger className="size-8 ml-2">
+																<Button size={"icon"} className="size-8" variant={"ghost"}>
+																	<EllipsisVertical size={20} />
+																</Button>
+															</DropdownMenuTrigger>
+															<DropdownMenuContent>
+																<DropdownMenuItem
+																	className="flex gap-2 place-items-center"
+																	onClick={() => {
+																		if ((entry as ExpenseType).tags != undefined) {
+																			deleteExpenseMutation.mutate(entry.id);
+																		}
+																	}}
+																>
+																	<Trash2 size={16} color="#ff5555" />{" "}
+																	<span className="text-[#ff5555] mt-0.5">Delete</span>
+																</DropdownMenuItem>
+															</DropdownMenuContent>
+														</DropdownMenu>
+													</div>
 												</div>
 											</div>
 										</div>

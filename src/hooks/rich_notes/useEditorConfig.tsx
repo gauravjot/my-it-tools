@@ -295,7 +295,6 @@ export function Link({element, attributes, children}: any) {
 
 export function LinkEditor({editorOffsets, selectionForLink}: any) {
 	const linkEditorRef = useRef<HTMLDivElement>(null);
-	const [saveBtnIcon, setSaveBtnIcon] = useState<"done" | "save">("save");
 	const editor = useSlateStatic();
 	const [node, path] = Editor.above(editor, {
 		at: selectionForLink,
@@ -310,14 +309,12 @@ export function LinkEditor({editorOffsets, selectionForLink}: any) {
 
 	const onLinkURLChange = useCallback(
 		(event: any) => {
-			setSaveBtnIcon("save");
 			setLinkURL(event.target.value);
 		},
 		[setLinkURL]
 	);
 
 	const onApply = useCallback(() => {
-		setSaveBtnIcon("done");
 		let url = String(linkURL);
 		if (!(url.includes("//") || url.includes("\\\\"))) {
 			url = "http://" + url;

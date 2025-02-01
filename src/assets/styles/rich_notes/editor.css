@@ -1,0 +1,196 @@
+/*
+ Zoom Slider
+*/
+.zoomslidecontainer {
+	width: 100%; /* Width of the outside container */
+}
+
+/* The slider itself */
+.zoomslider {
+	-webkit-appearance: none; /* Override default CSS styles */
+	appearance: none;
+	width: 5rem; /* Full-width */
+	outline: none; /* Remove outline */
+	border-radius: 10px;
+	@apply bg-white border border-slate-300 hover:border-slate-400 h-1.5 transition-colors cursor-pointer;
+}
+
+/* Mouse-over effects */
+.zoomslider:hover {
+	@apply bg-slate-200;
+}
+
+/* The slider handle (use -webkit- (Chrome, Opera, Safari, Edge) and -moz- (Firefox) to override default look) */
+.zoomslider::-webkit-slider-thumb {
+	-webkit-appearance: none; /* Override default look */
+	appearance: none;
+	cursor: pointer; /* Cursor on hover */
+	@apply bg-white rounded-full size-4 border-none m-px hover:size-5 hover:bg-accent-700 transition-all;
+	box-shadow: inset 0 0 0 5px theme("colors.accent.700");
+}
+
+.zoomslider::-moz-range-thumb {
+	cursor: pointer; /* Cursor on hover */
+	@apply bg-white rounded-full border-none m-px size-4 hover:size-5 hover:bg-accent-700 transition-all;
+	box-shadow: inset 0 0 0 5px theme("colors.accent.700");
+}
+
+/*
+  * Editor
+*/
+
+.ab-toolbar {
+	@apply w-full max-w-6xl mx-auto;
+}
+
+.editor {
+	font-family: "Roboto", sans-serif;
+	font-size: 16px;
+	@apply mt-8 relative print:block;
+}
+
+.editor > div[role="textbox"] {
+	@apply max-w-[56em] mb-[2.5em] lg:mb-[4em] px-[1.5em] py-[1em] sm:px-[2em] sm:py-[1.5em] sm:pb-[9em] lg:px-[4em] lg:py-[3em] lg:pb-[12em] xl:px-[5em] xl:py-[4em] xl:pb-[16em] sm:rounded-md shadow-sm bg-white mx-auto min-h-[calc(100vh-7rem)];
+	@apply print:p-0 print:m-0 print:shadow-none;
+}
+.editor > div[role="textbox"] > *:first-child {
+	margin-top: 0.5em;
+}
+
+.editor a[data-slate-node] {
+	@apply text-sky-700 border-b border-solid border-sky-700 hover:text-blue-700 font-medium;
+}
+
+.editor code {
+	font-family: "Source Code Pro", "Consolas", monospace;
+	@apply bg-gray-300/80 text-gray-700 tracking-tight rounded px-1 mx-px py-px font-bold;
+	font-size: 0.925em;
+}
+
+/*
+ * Ordered and Unoredered lists
+*/
+.editor-ul {
+	@apply list-disc;
+}
+.editor-ol {
+	@apply list-decimal;
+}
+
+.editor-ul,
+.editor-ol {
+	@apply ml-4 pb-1;
+}
+
+.editor > div[role="textbox"] > .editor-ul,
+.editor > div[role="textbox"] > .editor-ol {
+	@apply ml-8 my-4;
+}
+
+.editor-ul > .editor-li,
+.editor-ol > .editor-li {
+	@apply my-2 pl-2 last:mb-0;
+}
+
+.editor-ol .editor-ol {
+	list-style: lower-alpha;
+}
+.editor-ol .editor-ol .editor-ol {
+	list-style: lower-roman;
+}
+
+.editor-ul .editor-ul {
+	list-style: circle;
+}
+.editor-ul .editor-ul .editor-ul {
+	list-style: square;
+}
+
+/*
+ * Block Elements
+*/
+
+.editor-h1 {
+	@apply font-serif font-black;
+	font-size: 2.25em;
+	margin-bottom: 1em;
+	margin-top: 1.5em;
+}
+
+.editor-h2 {
+	@apply font-serif font-black;
+	font-size: 1.8em;
+	margin-bottom: 1em;
+	margin-top: 1.5em;
+}
+
+.editor-h3 {
+	@apply font-serif;
+	font-size: 1.5em;
+	margin-bottom: 1em;
+	margin-top: 1.25em;
+}
+
+.editor-h4 {
+	@apply font-serif;
+	font-size: 1.2em;
+	margin-bottom: 1em;
+	margin-top: 1.25em;
+}
+
+.editor-highlight {
+	@apply bg-yellow-100;
+}
+
+.editor-p,
+li {
+	@apply text-gray-900;
+	font-size: 1em;
+	line-height: 1.6;
+	margin-block: 1em;
+}
+
+.editor-p > span {
+	@apply inline;
+}
+
+.editor-codeblock {
+	@apply bg-gray-100 bg-opacity-90 text-gray-700 font-medium font-mono border-gray-300 border-solid;
+	font-size: 0.9em;
+	line-height: 1.4;
+	padding-inline: 0.625em;
+	padding-block: 0.125em;
+	border-left-width: 0.125em;
+}
+
+.editor-quote {
+	@apply border-gray-300 text-gray-800 font-normal italic;
+	padding-inline: 1em;
+	border-left-width: 0.125em;
+	margin-top: 1em;
+}
+
+.editor-quote + .editor-codeblock,
+.editor-h1 + .editor-codeblock,
+.editor-h2 + .editor-codeblock,
+.editor-h3 + .editor-codeblock,
+.editor-h4 + .editor-codeblock,
+.editor-p + .editor-codeblock {
+	padding-top: 0.125em;
+}
+
+.editor-codeblock + .editor-h2,
+.editor-codeblock + .editor-h1,
+.editor-codeblock + .editor-h3,
+.editor-codeblock + .editor-h4 {
+	margin-top: 1.5em;
+}
+
+.editor-quote + .editor-quote,
+.editor-codeblock + .editor-codeblock {
+	margin-top: 0;
+}
+.editor-quote + :not(.editor-quote),
+.editor-codeblock + :not(.editor-codeblock) {
+	margin-top: 1em;
+}

@@ -23,4 +23,5 @@ urlpatterns = [
 	path('auth/', include('django_axor_auth.web_auth.urls')),
 
 	path('api/expense_tracker/', include('expense_tracker.urls')),
+	path('api/rich_notes/', include('rich_notes.urls')),
 ]

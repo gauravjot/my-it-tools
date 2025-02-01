@@ -9,6 +9,7 @@ import {
 	LogIn,
 	LogOut,
 	Menu,
+	Notebook,
 	RectangleEllipsis,
 	X,
 } from "lucide-react";
@@ -36,25 +37,38 @@ const links = [
 		to: "/expense-tracker",
 		icon: <DollarSign size={14} strokeWidth={3} />,
 	},
+	{
+		name: "Rich Notes",
+		to: "/rich-notes",
+		icon: <Notebook size={14} strokeWidth={3} />,
+	},
 ];
 
 export default function Sidebar() {
 	const currentPage = window.location;
 	const [isOpen, setIsOpen] = useState<boolean>(false);
 	const user = useContext(UserContext);
+	const currentLink = links.filter((s) => s.to === currentPage.pathname).at(0)?.name;
 
 	return (
 		<>
 			{!isOpen && (
-				<div className="fixed z-50 top-2 right-2 lg:hidden">
-					<Button
-						className="aspect-sqaure size-12 !p-1 rounded-full"
-						onClick={() => {
-							setIsOpen(true);
-						}}
-					>
-						<Menu size={24} />
-					</Button>
+				<div className="max-w-full lg:hidden">
+					<div className="p-2 dark:bg-zinc-900 bg-white shadow-md flex place-items-center">
+						<h1 className="flex-1 text-foreground ml-2 font-semibold text-lg">
+							{currentLink ?? "Toolkit"}
+						</h1>
+						<div>
+							<Button
+								className="aspect-sqaure size-12 !p-1 rounded-full"
+								onClick={() => {
+									setIsOpen(true);
+								}}
+							>
+								<Menu size={24} />
+							</Button>
+						</div>
+					</div>
 				</div>
 			)}
 			<div
@@ -63,10 +77,10 @@ export default function Sidebar() {
 					(!isOpen && " hidden lg:flex")
 				}
 			>
-				<div className="flex gap-4 py-2 mx-4 place-items-center">
+				<div className="flex gap-4 mx-2 place-items-center">
 					<Link
 						to={"/"}
-						className="flex-1 text-lg font-bold tracking-tight text-black dark:text-white"
+						className="flex-1 text-lg ml-2 font-bold tracking-tight text-black dark:text-white"
 					>
 						My IT Tools
 					</Link>

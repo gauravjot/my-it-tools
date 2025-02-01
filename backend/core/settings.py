@@ -28,7 +28,8 @@ INSTALLED_APPS = [
     'django_axor_auth.web_auth',
 
     'rest_framework',
-    'expense_tracker'
+    'expense_tracker',
+    'rich_notes'
 ]
 
 MIDDLEWARE = [

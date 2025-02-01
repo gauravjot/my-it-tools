@@ -1,0 +1,201 @@
+.infotrig {
+	position: relative;
+}
+
+.infomsg {
+	@apply opacity-0 hidden absolute z-[100] max-w-6xl bg-zinc-500 text-white;
+	@apply rounded px-1.5 py-0.5 text-xs font-medium;
+}
+
+.infotrig:hover .infomsg {
+	@apply opacity-100 block w-auto h-auto;
+}
+
+/*
+  * Sidebar
+*/
+
+/* Trigger */
+.sidebar-hide-able {
+	transition-property: width, opacity;
+	transition: 0.5s ease-out;
+	@apply left-0 top-16 lg:top-0 bottom-0 right-10 z-40 fixed lg:relative;
+	@apply w-[80%] max-w-[28rem] lg:w-[18rem] xl:w-[19rem] 2xl:w-[21rem];
+}
+.sidebar-hide-able[aria-hidden="false"] {
+	@apply opacity-100;
+	@apply min-w-[18rem] xl:min-w-[19rem] 2xl:min-w-[21rem];
+}
+.sidebar-hide-able[aria-hidden="true"] {
+	@apply w-0 opacity-0;
+	@apply min-w-0 xl:min-w-0 2xl:min-w-0;
+}
+.sidebar-expand-btn {
+	@apply aspect-auto rounded-bl-none;
+	@apply size-10 w-auto h-10 flex justify-center place-items-center;
+	@apply hover:bg-zinc-500 transition-all pl-0.5 pr-1.5;
+	@apply shadow-md border-t border-r border-b rounded-r-md;
+	@apply border-solid border-zinc-300;
+}
+.sidebar-expand-btn:hover {
+	@apply pl-1.5;
+}
+.sidebar-expand-btn[aria-expanded="true"] {
+	@apply bg-zinc-800 size-12 w-auto h-10;
+}
+.sidebar-expand-btn[aria-expanded="true"] span.ic {
+	@apply rotate-180;
+}
+.sidebar-expand-btn[aria-expanded="false"] {
+	@apply bg-zinc-700 lg:bg-zinc-600;
+}
+.sidebar-expand-btn[aria-expanded="false"] span.ic {
+	@apply rotate-0;
+}
+
+.notelist .sidebar-note-menu button {
+	@apply tracking-wider;
+}
+
+.notelist > div:nth-child(1) .sidebar-note-menu {
+	@apply top-0.5 bottom-auto right-0 origin-top-right;
+}
+
+/* note list - note item menu button - three dots */
+.sidebar-note-menu[aria-hidden="false"] {
+	@apply scale-100 z-20;
+}
+.sidebar-note-menu[aria-hidden="true"] {
+	@apply scale-0;
+}
+
+.sidebar-make-note-popup {
+	@apply transition-all duration-300 size-8 absolute top-0 right-6;
+	@apply hover:bg-foreground/20 rounded-md bg-background;
+	@apply hover:border-solid flex items-center justify-center;
+}
+.sidebar-make-note-popup[aria-selected="true"] {
+	@apply bg-black/30 top-12 right-4 shadow hover:bg-white/20;
+}
+.sidebar-make-note-popup span {
+	@apply invert duration-200 transition-all;
+}
+.sidebar-make-note-popup[aria-selected="false"]:hover span {
+	@apply invert;
+}
+.sidebar-make-note-popup[aria-selected="false"] span {
+	@apply invert-0 rotate-45;
+}
+.sidebar-make-note-popup[aria-selected="true"] span {
+	@apply invert rotate-0;
+}
+
+.sidebar-notelist-item {
+	@apply flex relative text-gray-600 px-6 transition-all;
+	@apply hover:bg-foreground/10;
+}
+.sidebar-notelist-item[aria-current="true"] {
+	@apply pl-6 py-2 border-l-8 border-accent-400 dark:border-accent-500 bg-accent-100 dark:bg-accent-500/10;
+}
+.sidebar-notelist-item[aria-current="false"] {
+	@apply pl-6;
+}
+.active-badge {
+	transition-property: width;
+	transition-timing-function: cubic-bezier(0.075, 0.82, 0.165, 1);
+	@apply duration-1000 w-0 overflow-hidden inline-block text-[0.7rem];
+	@apply align-middle font-medium;
+}
+.sidebar-notelist-item[aria-current="true"] .active-badge {
+	@apply w-auto mr-2 bg-accent-200 text-accent-900 rounded-md px-1;
+}
+.sidebar-notelist-item[aria-current="false"] .active-badge {
+	@apply w-0;
+}
+
+/*
+  * Link Share
+*/
+.share-sidebar {
+	@apply fixed right-0 top-0 bottom-0 z-[100] transition-opacity;
+}
+.share-sidebar[aria-expanded="true"] {
+	@apply opacity-100;
+}
+.share-sidebar[aria-expanded="false"] {
+	@apply opacity-70;
+}
+.share-sidebar > .share-sidebar-content {
+	@apply fixed right-0 z-10 bg-white shadow-md size-full;
+	@apply transition-all duration-500;
+	@apply max-w-[34rem] w-[80%] 2xl:w-[34rem] xl:w-[32rem] lg:w-[28rem];
+}
+.share-sidebar[aria-expanded="true"] > .share-sidebar-content {
+	@apply right-0;
+}
+.share-sidebar[aria-expanded="false"] > .share-sidebar-content {
+	@apply -right-[80%] 2xl:-right-[34rem] xl:-right-[32rem] lg:-right-[28rem];
+	@apply transition-all duration-500;
+}
+
+/*
+ * Spinner
+ */
+.spinner {
+	--loader-size: 35px;
+	--loader-border-size: 3px;
+	--loader-border-color: white;
+	width: var(--loader-size);
+	height: var(--loader-size);
+	border: var(--loader-border-size) solid var(--loader-border-color);
+	animation: spin 1s linear infinite;
+	@apply inline-block relative rounded-full bg-transparent;
+	@apply border-r-transparent border-t-transparent border-b-transparent;
+}
+.spinner::before {
+	content: "";
+	border: var(--loader-border-size) solid var(--loader-border-color);
+	animation: spin 0.5s linear infinite reverse;
+	@apply inset-0.5 absolute rounded-full bg-transparent;
+	@apply border-l-transparent border-t-transparent border-b-transparent;
+}
+@keyframes spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+.spinner-xl {
+	--loader-size: 80px;
+	--loader-border-size: 6px;
+}
+.spinner-sm {
+	--loader-size: 25px;
+	--loader-border-size: 2px;
+}
+.spinner-xs {
+	--loader-size: 14px;
+	--loader-border-size: 2px;
+}
+.spinner-md {
+	--loader-size: 50px;
+	--loader-border-size: 4px;
+}
+.spinner-lg {
+	--loader-size: 60px;
+	--loader-border-size: 5px;
+}
+.spinner-primary {
+	--loader-border-color: theme(colors.accent.700);
+}
+.spinner-danger {
+	--loader-border-color: theme(colors.red.600);
+}
+.spinner-white {
+	--loader-border-color: theme(colors.white);
+}
+.spinner-black {
+	--loader-border-color: theme(colors.black);
+}
+.spinner-gray {
+	--loader-border-color: theme(colors.gray.500);
+}

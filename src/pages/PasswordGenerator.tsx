@@ -20,7 +20,7 @@ export default function PasswordGenerator() {
 	const [length, setLength] = useLocalStorage<number>("password-generator-length", 10); // Default length of password
 	const [prevPasswords, setPrevPasswords] = useLocalStorage<PasswordStoreType[]>(
 		"password-generator-history",
-		[],
+		[]
 	);
 	const navigate = useNavigate();
 	const {toast} = useToast();
@@ -91,8 +91,8 @@ export default function PasswordGenerator() {
 
 	return (
 		<BaseSidebarLayout title="Password Generator">
-			<div className="flex max-w-lg mx-auto mt-12 place-items-center">
-				<div className="w-full p-8 m-4 lg:m-8 bg-white shadow-md dark:bg-zinc-900 rounded-xl">
+			<div className="flex max-w-lg mx-auto mt-4 lg:mt-12 place-items-center">
+				<div className="w-full p-4 lg:p-8 m-4 lg:m-8 bg-white shadow-md dark:bg-zinc-900 rounded-xl">
 					<h1 className="text-2xl font-bold tracking-tight">Random Password Generator</h1>
 					<p className="mt-3 text-sm text-zinc-700 dark:text-zinc-300">
 						Generates a random password containing at least one uppercase, lowercase, number and
@@ -128,7 +128,7 @@ export default function PasswordGenerator() {
 									const newPassword = generatePassword(length || 10);
 									setPassword(newPassword);
 									if (copyBtnRef.current) {
-										copyBtnRef.current.innerHTML = "Copy and Save to browser";
+										copyBtnRef.current.innerHTML = "Copy and Save";
 									}
 								}}
 							>
@@ -166,7 +166,7 @@ export default function PasswordGenerator() {
 							}}
 						>
 							<ClipboardList className="size-4" />
-							<span ref={copyBtnRef}>Copy and Save to browser</span>
+							<span ref={copyBtnRef}>Copy and Save</span>
 						</Button>
 						<Button
 							variant="outline"
@@ -184,7 +184,7 @@ export default function PasswordGenerator() {
 					</div>
 				</div>
 			</div>
-			<div className="max-w-[90%] m-auto mt-16 mb-8 rounded-md p-6 border">
+			<div className="max-w-[90%] m-auto mt-16 mb-8 rounded-md p-3 lg:p-6 border">
 				<div className="flex">
 					<h2 className="flex-1 mb-4 font-medium">Previous Passwords</h2>
 					<Button

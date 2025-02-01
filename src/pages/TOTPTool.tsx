@@ -10,16 +10,10 @@ import {Button} from "@/components/ui/button";
 import {ClipboardList, Trash2} from "lucide-react";
 import {TOTP} from "totp-generator";
 import {Progress} from "@/components/ui/progress";
-import { SubmitHandler, useForm } from "react-hook-form";
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-  } from "@/components/ui/tooltip"
-  
+import {SubmitHandler, useForm} from "react-hook-form";
+import {zodResolver} from "@hookform/resolvers/zod";
+import * as z from "zod";
+import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip";
 
 interface TOTPEntry {
 	value: string;
@@ -28,7 +22,7 @@ interface TOTPEntry {
 }
 
 const schema = z.object({
-	token: z.string().refine(isAlphaNumeric, {message: 'Token should be alphanumeric only'}),
+	token: z.string().refine(isAlphaNumeric, {message: "Token should be alphanumeric only"}),
 	name: z.string(),
 });
 
@@ -49,44 +43,46 @@ export default function TOTPTool() {
 		handleSubmit,
 		watch,
 		formState: {errors},
-		setValue
+		setValue,
 	} = useForm<z.infer<typeof schema>>({
 		defaultValues: {
-			token: totp.value
+			token: totp.value,
 		},
 		resolver: zodResolver(schema),
-		mode: "all"
+		mode: "all",
 	});
 	const onSubmit: SubmitHandler<z.infer<typeof schema>> = (data) => {
-		if (!prevTotp.find((t) => t.value === totp.value)){
-			setPrevTotp([...prevTotp, {
-				 datetime: totp.datetime,
-				 value: totp.value,
-				 name: data.name
-			}]);
+		if (!prevTotp.find((t) => t.value === totp.value)) {
+			setPrevTotp([
+				...prevTotp,
+				{
+					datetime: totp.datetime,
+					value: totp.value,
+					name: data.name,
+				},
+			]);
 		}
 		navigator.clipboard.writeText(otp.otp);
 		toast({
 			description: "OTP copied to clipboard.",
 		});
-	}
-	useEffect(()=>{
+	};
+	useEffect(() => {
 		setValue("token", totp.value);
-	}, [totp.value])
+	}, [totp.value]);
 
 	// Callback version of watch.
 	useEffect(() => {
 		// Function to handle input change
-		const subscription = watch((value, { name}) => {
-			if (name === 'token' && value.token !== undefined) {
+		const subscription = watch((value, {name}) => {
+			if (name === "token" && value.token !== undefined) {
 				if (value.token.length > 0 && isAlphaNumeric(value.token)) {
 					setTotp({value: value.token, datetime: new Date().toISOString()});
 				}
 			}
-		}
-		)
-		return () => subscription.unsubscribe()
-	  }, [watch])
+		});
+		return () => subscription.unsubscribe();
+	}, [watch]);
 
 	// Update password whenever length changes
 	useEffect(() => {
@@ -122,22 +118,30 @@ export default function TOTPTool() {
 
 	return (
 		<BaseSidebarLayout title="TOTP Tool">
-			<div className="flex max-w-lg mx-auto mt-12 place-items-center">
-				<div className="w-full p-8 m-4 lg:m-8 bg-white shadow-md dark:bg-zinc-900 rounded-xl">
+			<div className="flex max-w-lg mx-auto mt-4 lg:mt-12 place-items-center">
+				<div className="w-full p-4 lg:p-8 m-4 lg:m-8 bg-white shadow-md dark:bg-zinc-900 rounded-xl">
 					<h1 className="text-2xl font-bold tracking-tight">TOTP tool</h1>
 					<p className="mt-3 text-sm text-zinc-700 dark:text-zinc-300">
 						Enter the token to see your one-time password and copy it to your clipboard.
 					</p>
 					<form onSubmit={handleSubmit(onSubmit)}>
 						<div className="mt-6 space-y-1">
-							<Label className={errors.token ? 'text-red-500 dark:text-red-400' : ''}>Token</Label>
-							<Input className={errors.token ? 'border-red-400' : ''} type="text" {...register("token")} />
-							<p className="text-red-500 dark:text-red-400 text-sm my-2">{errors.token && errors.token.message && errors.token.message.toString()}</p>
+							<Label className={errors.token ? "text-red-500 dark:text-red-400" : ""}>Token</Label>
+							<Input
+								className={errors.token ? "border-red-400" : ""}
+								type="text"
+								{...register("token")}
+							/>
+							<p className="text-red-500 dark:text-red-400 text-sm my-2">
+								{errors.token && errors.token.message && errors.token.message.toString()}
+							</p>
 						</div>
 						<div className="mt-6 space-y-1.5">
 							<div className="flex">
 								<Label className="flex-1">One-Time Password</Label>
-								<span className="text-xs text-muted-foreground">{Math.floor(timeRemaining)} secs remaining</span>
+								<span className="text-xs text-muted-foreground">
+									{Math.floor(timeRemaining)} secs remaining
+								</span>
 							</div>
 							<div className="flex gap-3 place-items-center">
 								<TooltipProvider>
@@ -185,20 +189,13 @@ export default function TOTPTool() {
 						<div className="mt-4 space-y-1">
 							<Label>Name (optional)</Label>
 							<div className="">
-								<Input
-									type="text"
-									{...register("name")}
-								/>
+								<Input type="text" {...register("name")} />
 							</div>
 						</div>
 						<div className="flex w-full gap-2 mt-8">
-							<Button
-								variant="default"
-								type="submit"
-								className="flex-1 flex gap-2"
-							>
+							<Button variant="default" type="submit" className="flex-1 flex gap-2">
 								<ClipboardList className="size-4" />
-								<span>Copy and Save to browser</span>
+								<span>Copy and Save</span>
 							</Button>
 							<Button
 								variant="outline"
@@ -217,7 +214,7 @@ export default function TOTPTool() {
 					</form>
 				</div>
 			</div>
-			<div className="max-w-[90%] m-auto mt-16 mb-8 rounded-md p-6 border">
+			<div className="max-w-[90%] m-auto mt-16 mb-8 rounded-md p-3 lg:p-6 border">
 				<div className="flex">
 					<h2 className="flex-1 mb-4 font-medium">Previous TOTP</h2>
 					<Button
@@ -235,7 +232,10 @@ export default function TOTPTool() {
 						.slice()
 						.reverse()
 						.map((entry, index) => (
-							<div className="inline-flex place-items-center gap-2 mr-8 hover:bg-white/70 dark:hover:bg-zinc-950 p-1 rounded-lg" key={entry.datetime}>
+							<div
+								className="inline-flex place-items-center gap-2 mr-8 hover:bg-white/70 dark:hover:bg-zinc-950 p-1 rounded-lg"
+								key={entry.datetime}
+							>
 								<TooltipProvider>
 									<Tooltip>
 										<TooltipTrigger>
@@ -244,14 +244,14 @@ export default function TOTPTool() {
 												onClick={() => {
 													setTotp(entry);
 													setValue("token", entry.value);
-													setValue("name", entry.name || '');
-													
+													setValue("name", entry.name || "");
+
 													toast({
 														description: "TOTP inserted into the tool.",
 													});
 												}}
 											>
-												{entry.name ? entry.name + ` (${entry.value.slice(0,4)}..)` : entry.value}
+												{entry.name ? entry.name + ` (${entry.value.slice(0, 4)}..)` : entry.value}
 											</button>
 										</TooltipTrigger>
 										<TooltipContent>
@@ -260,7 +260,6 @@ export default function TOTPTool() {
 									</Tooltip>
 								</TooltipProvider>
 								<span className="text-xs text-muted-foreground">
-
 									&mdash; {dateTimePretty(entry.datetime)}
 								</span>
 								<TooltipProvider>
@@ -270,8 +269,8 @@ export default function TOTPTool() {
 												variant={"destructive"}
 												size={"sm"}
 												className="aspect-square size-6 p-0 opacity-30 hover:opacity-100"
-												onClick={()=>{
-													let newArr = prevTotp.slice().reverse();
+												onClick={() => {
+													const newArr = prevTotp.slice().reverse();
 													console.log(JSON.stringify(newArr));
 													console.log(index);
 													newArr.splice(index, 1);
@@ -298,15 +297,18 @@ export default function TOTPTool() {
 }
 
 function isAlphaNumeric(str: string) {
-	var code, i, len;
-  
+	let code, i, len;
+
 	for (i = 0, len = str.length; i < len; i++) {
-	  code = str.charCodeAt(i);
-	  if (!(code > 47 && code < 58) && // numeric (0-9)
-		  !(code > 64 && code < 91) && // upper alpha (A-Z)
-		  !(code > 96 && code < 123)) { // lower alpha (a-z)
-		return false;
-	  }
+		code = str.charCodeAt(i);
+		if (
+			!(code > 47 && code < 58) && // numeric (0-9)
+			!(code > 64 && code < 91) && // upper alpha (A-Z)
+			!(code > 96 && code < 123)
+		) {
+			// lower alpha (a-z)
+			return false;
+		}
 	}
 	return true;
-};
+}

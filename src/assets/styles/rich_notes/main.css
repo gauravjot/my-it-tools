@@ -41,13 +41,13 @@
 	@apply pl-1.5;
 }
 .sidebar-expand-btn[aria-expanded="true"] {
-	@apply bg-zinc-800 size-12 w-auto h-10;
+	@apply bg-zinc-800 dark:bg-white size-12 w-auto h-10;
 }
 .sidebar-expand-btn[aria-expanded="true"] span.ic {
 	@apply rotate-180;
 }
 .sidebar-expand-btn[aria-expanded="false"] {
-	@apply bg-zinc-700 lg:bg-zinc-600;
+	@apply bg-zinc-700 dark:bg-zinc-200 dark:invert;
 }
 .sidebar-expand-btn[aria-expanded="false"] span.ic {
 	@apply rotate-0;
@@ -91,14 +91,14 @@
 }
 
 .sidebar-notelist-item {
-	@apply flex relative text-gray-600 px-6 transition-all;
+	@apply flex relative text-gray-600 px-3 transition-all rounded mx-2 my-1;
 	@apply hover:bg-foreground/10;
 }
 .sidebar-notelist-item[aria-current="true"] {
-	@apply pl-6 py-2 border-l-8 border-accent-400 dark:border-accent-500 bg-accent-100 dark:bg-accent-500/10;
+	@apply pl-3 pb-0.5 border-l-8 border-accent-600 dark:border-accent-500 bg-accent-100 dark:bg-accent-500/10;
 }
 .sidebar-notelist-item[aria-current="false"] {
-	@apply pl-6;
+	@apply pl-3;
 }
 .active-badge {
 	transition-property: width;
@@ -126,7 +126,7 @@
 	@apply opacity-70;
 }
 .share-sidebar > .share-sidebar-content {
-	@apply fixed right-0 z-10 bg-white shadow-md size-full;
+	@apply fixed right-0 z-10 bg-background shadow-md size-full;
 	@apply transition-all duration-500;
 	@apply max-w-[34rem] w-[80%] 2xl:w-[34rem] xl:w-[32rem] lg:w-[28rem];
 }

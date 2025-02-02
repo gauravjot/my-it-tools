@@ -3,8 +3,9 @@ import {Dispatch, SetStateAction} from "react";
 
 export interface ErrorType {
 	code: string;
-	message: string;
-	success: boolean;
+	title: string;
+	detail: string;
+	instance: string;
 }
 
 export function handleAxiosError(
@@ -15,10 +16,7 @@ export function handleAxiosError(
 	try {
 		const res = msg as ErrorType;
 		setReqError(
-			JSON.stringify(res.message).replaceAll('"', "").replaceAll("\\n", "\n") +
-				" [" +
-				res.code +
-				"]"
+			JSON.stringify(res.title).replaceAll('"', "").replaceAll("\\n", "\n") + " [" + res.code + "]"
 		);
 	} catch (err) {
 		setReqError(JSON.stringify(error.message).replaceAll('"', ""));

@@ -9,7 +9,7 @@ import {getNoteShares} from "@/services/rich_notes/note/get_note_shares";
 import {ShareNoteQueryType, shareNoteQuery} from "@/services/rich_notes/note/create_share_link";
 import {handleAxiosError} from "@/lib/HandleAxiosError";
 import {Button} from "@/components/ui/button";
-import {X} from "lucide-react";
+import {Lock, X} from "lucide-react";
 import {timeSince} from "@/lib/dateTimeUtils";
 import * as z from "zod";
 import {zodResolver} from "@hookform/resolvers/zod";
@@ -18,6 +18,9 @@ import {
 	DisableShareLinkType,
 	disableShareLinkQuery,
 } from "@/services/rich_notes/note/disable_share_link";
+import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
+import {Input} from "@/components/ui/input";
+import {Checkbox} from "@radix-ui/react-checkbox";
 
 interface Props {
 	note: NoteListItemType;
@@ -102,14 +105,14 @@ export default function ShareNotePopup({closePopup, note, open}: Props) {
 			<div className="share-sidebar-content">
 				<div className="px-4 lg:px-6 h-screen flex flex-col">
 					<div>
-						<div className="absolute top-4 right-4 bg-white z-20">
-							<Button variant={"ghost"} onClick={closeFn}>
-								<X size={18} />
+						<div className="absolute top-4 right-4 z-20">
+							<Button variant={"ghost"} className="aspect-square p-0" onClick={closeFn}>
+								<X size={22} />
 							</Button>
 						</div>
-						<h2 className="pt-9 lg:pt-7 mb-4">Share note</h2>
-						<p className="mt-6 text-gray-900 font-medium text-md tracking-wide">{note.title}</p>
-						<p className="mt-1 text-gray-500 text-bb tracking-wide">
+						<h2 className="pt-9 lg:pt-7 mb-4 font-semibold text-lg">Share note</h2>
+						<p className="mt-6 text-foreground font-medium text-md tracking-wide">{note.title}</p>
+						<p className="mt-1 text-muted-foreground text-bb tracking-wide">
 							Last updated {timeSince(note.updated)}
 						</p>
 						<div>
@@ -127,7 +130,11 @@ export default function ShareNotePopup({closePopup, note, open}: Props) {
 											<input
 												type="text"
 												className="w-full border border-gray-400 rounded-md py-1.5 px-2 bg-gray-100 text-bb focus-visible:outline-none"
-												value={window.location.origin + "/shared/" + shareNoteMutation.data.urlkey}
+												value={
+													window.location.origin +
+													"/rich-notes/shared/" +
+													shareNoteMutation.data.urlkey
+												}
 												readOnly
 											/>
 											<button
@@ -135,7 +142,9 @@ export default function ShareNotePopup({closePopup, note, open}: Props) {
 												className="text-primary-600 text-sm font-bold uppercase border border-primary-500 px-2 py-0.5 rounded-md shadow-sm hover:bg-primary-50 hover:outline hover:outline-primary-200"
 												onClick={(self) => {
 													navigator.clipboard.writeText(
-														window.location.origin + "/shared/" + shareNoteMutation.data.urlkey
+														window.location.origin +
+															"/rich-notes/shared/" +
+															shareNoteMutation.data.urlkey
 													);
 													self.currentTarget.innerHTML = "Copied!";
 												}}
@@ -154,70 +163,80 @@ export default function ShareNotePopup({closePopup, note, open}: Props) {
 									</>
 								) : (
 									<>
-										<h3 className="text-bb font-medium py-px mt-8 text-gray-800 border-b">
-											Share with
-										</h3>
+										<h2 className="pt-7 pb-2 font-semibold">Share With</h2>
 										{shareNoteQueryError && (
 											<p className="mx-4 mt-4 text-red-700 text-sm">{shareNoteQueryError}</p>
 										)}
-
-										<form className="mx-2" onSubmit={form.handleSubmit(createNewShareLink)}>
-											{/* <FormField
-												control={form.control}
-												name="title"
-												render={({field}) => (
-													<FormItem>
-														<FormLabel>Title</FormLabel>
-														<FormControl>
-															<Input placeholder="friends, work, ..." {...field} />
-														</FormControl>
-														<FormMessage />
-													</FormItem>
-												)}
-											/>
-											<FormField
-												control={form.control}
-												name="pass_protect"
-												render={({field}) => (
-													<FormItem>
-														<FormLabel>Protect Link with Password</FormLabel>
-														<FormControl>
-															<Checkbox checked={field.value} onCheckedChange={field.onChange} />
-														</FormControl>
-														<FormMessage />
-													</FormItem>
-												)}
-											/>
-											<FormField
-												control={form.control}
-												name="password"
-												render={({field}) => (
-													<FormItem>
-														<FormLabel>Password</FormLabel>
-														<FormControl>
-															<Input {...field} />
-														</FormControl>
-														<FormMessage />
-													</FormItem>
-												)}
-											/>
-											<FormField
-												control={form.control}
-												name="anon"
-												render={({field}) => (
-													<FormItem>
-														<FormLabel>Share as anonymous</FormLabel>
-														<FormControl>
-															<Checkbox checked={field.value} onCheckedChange={field.onChange} />
-														</FormControl>
-														<FormMessage />
-													</FormItem>
-												)}
-											/> */}
-											<Button type="submit" disabled={shareNoteMutation.isPending}>
-												Get Share Link
-											</Button>
-										</form>
+										<Form {...form}>
+											<form
+												className="mt-2 space-y-2"
+												onSubmit={form.handleSubmit(createNewShareLink)}
+											>
+												<FormField
+													control={form.control}
+													name="title"
+													render={({field}) => (
+														<FormItem>
+															<FormLabel>Title</FormLabel>
+															<FormControl>
+																<Input placeholder="friends, work, ..." {...field} />
+															</FormControl>
+															<FormMessage />
+														</FormItem>
+													)}
+												/>
+												<FormField
+													control={form.control}
+													name="pass_protect"
+													render={({field}) => (
+														<FormItem>
+															<FormLabel>Protect Link with Password</FormLabel>
+															<FormControl>
+																<Checkbox
+																	className="size-10"
+																	checked={field.value}
+																	onCheckedChange={field.onChange}
+																/>
+															</FormControl>
+															<FormMessage />
+														</FormItem>
+													)}
+												/>
+												<FormField
+													control={form.control}
+													name="password"
+													render={({field}) => (
+														<FormItem>
+															<FormLabel>Password</FormLabel>
+															<FormControl>
+																<Input {...field} />
+															</FormControl>
+															<FormMessage />
+														</FormItem>
+													)}
+												/>
+												<FormField
+													control={form.control}
+													name="anon"
+													render={({field}) => (
+														<FormItem>
+															<FormLabel>Share as anonymous</FormLabel>
+															<FormControl>
+																<Checkbox checked={field.value} onCheckedChange={field.onChange} />
+															</FormControl>
+															<FormMessage />
+														</FormItem>
+													)}
+												/>
+												<Button
+													type="submit"
+													variant={"accent"}
+													disabled={shareNoteMutation.isPending}
+												>
+													Get Share Link
+												</Button>
+											</form>
+										</Form>
 									</>
 								)}
 							</div>
@@ -226,14 +245,14 @@ export default function ShareNotePopup({closePopup, note, open}: Props) {
 					<div className="flex-1 flex flex-col h-full overflow-auto">
 						{shareListQuery.isSuccess ? (
 							<>
-								<h2 className="pt-7 pb-2">Past Shares</h2>
+								<h2 className="pt-7 pb-2 font-semibold">Past Shares</h2>
 								<div className="flex-1 overflow-y-auto	h-full">
 									{shareListQuery.data.length > 0 ? (
 										shareListQuery.data.map((link) => {
 											return <ShareLinkItem link={link} key={link.id} />;
 										})
 									) : (
-										<p className="mt-4 text-gray-600 text-sm">
+										<p className="mt-4 text-muted-foreground text-sm">
 											The links you create to share will appear here!
 										</p>
 									)}
@@ -244,7 +263,7 @@ export default function ShareNotePopup({closePopup, note, open}: Props) {
 								<Spinner color="primary" size="sm" />
 							</div>
 						) : shareListQuery.isError ? (
-							<p className="mx-4 mt-4 text-red-700 text-sm">
+							<p className="mx-4 mt-4 text-red-700 dark:text-red-400 text-sm">
 								Some error prevented fetching past shares
 							</p>
 						) : (
@@ -270,32 +289,29 @@ function ShareLinkItem({link}: {link: ShareNote}) {
 
 	return (
 		<div
-			className="last:mb-4 flex items-center py-0.5 pl-2 gap-3 border-b border-gray-100 whitespace-nowrap overflow-hidden"
+			className="last:mb-4 flex items-center py-0.5 pl-2 gap-3 border-b border-mutedbg-foreground/50 whitespace-nowrap overflow-hidden"
 			key={link.id}
 		>
 			<div className="grid md:grid-cols-4 md:gap-3 py-4 lg:py-0 flex-1 truncate">
-				<div className="col-span-1 text-xs text-gray-500">{timeSince(link.created)}</div>
+				<div className="col-span-1 text-xs text-muted-foreground">{timeSince(link.created)}</div>
 				<div className="col-span-2 text-sm flex gap-1 place-items-center truncate">
-					{link.isPasswordProtected ? (
-						<span
-							className="ic ic-green !size-3 lg:!size-3.5 ic-lock"
-							title="Password Protected"
-						></span>
-					) : (
-						<></>
-					)}
+					{link.isPasswordProtected ? <Lock size={16} color="#090" /> : <></>}
 					{link.title ? (
 						link.title
 					) : (
-						<span className="text-gray-500 text-xs truncate">no title</span>
+						<span className="text-muted-foreground text-xs truncate">no title</span>
 					)}
 				</div>
-				<div className="col-span-1 text-xs text-gray-500">{link.anonymous ? "Anonymous" : ""}</div>
+				<div className="col-span-1 text-xs text-muted-foreground">
+					{link.anonymous ? "Anonymous" : ""}
+				</div>
 			</div>
 			<div className="col-span-1 text-right pr-2">
 				<Button
 					disabled={disableShareLinkMutation.isSuccess || !link.active}
 					onClick={() => disableShareLinkMutation.mutate({id: link.id})}
+					variant={"ghost"}
+					size={"sm"}
 				>
 					{disableShareLinkMutation.isSuccess || !link.active ? "Disabled" : "Disable"}
 				</Button>

@@ -29,6 +29,6 @@ export async function shareNoteQuery(note_id: string, payload: ShareNoteQueryTyp
 			withCredentials: true,
 		})
 		.then(function (response) {
-			return response.data.data as ShareNoteCreateType;
+			return response.data as ShareNoteCreateType;
 		});
 }

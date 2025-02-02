@@ -44,7 +44,7 @@ def create_note(request):
         return ErrorMessage(
             title="Note not found",
             status=status.HTTP_404_NOT_FOUND,
-            instance=request.get_absolute_url(),
+            instance=request.build_absolute_uri(),
             code="N0400",
             detail="The note could not be found."
         ).to_response()
@@ -65,7 +65,7 @@ def get_notes(request):
         return ErrorMessage(
             title="Notes not found",
             status=status.HTTP_404_NOT_FOUND,
-            instance=request.get_absolute_url(),
+            instance=request.build_absolute_uri(),
             code="N0411",
             detail="The notes could not be found."
         ).to_response()
@@ -85,7 +85,7 @@ def note_ops(request, note_id):
     return ErrorMessage(
         title="No Action Allowed",
         status=status.HTTP_400_BAD_REQUEST,
-        instance=request.get_absolute_url(),
+        instance=request.build_absolute_uri(),
         code="N0412",
         detail="Cannot perform note action."
     ).to_response()
@@ -106,7 +106,7 @@ def read_note(request, note_id):
         return ErrorMessage(
             title="No note found",
             status=status.HTTP_404_NOT_FOUND,
-            instance=request.get_absolute_url(),
+            instance=request.build_absolute_uri(),
             code="N0404",
             detail="This note does not exist."
         ).to_response()
@@ -114,7 +114,7 @@ def read_note(request, note_id):
         return ErrorMessage(
             title="Failed reading note",
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            instance=request.get_absolute_url(),
+            instance=request.build_absolute_uri(),
             code="N0549",
             detail="This note cannot be retrieved."
         ).to_response()
@@ -128,7 +128,7 @@ def delete_note(request, note_id):
         return ErrorMessage(
             title="No note found",
             status=status.HTTP_404_NOT_FOUND,
-            instance=request.get_absolute_url(),
+            instance=request.build_absolute_uri(),
             code="N0407",
             detail="This note does not exist."
         ).to_response()
@@ -151,7 +151,7 @@ def update_note_content(request, note_id):
         return ErrorMessage(
             title="No note found",
             status=status.HTTP_404_NOT_FOUND,
-            instance=request.get_absolute_url(),
+            instance=request.build_absolute_uri(),
             code="N0403",
             detail="This note does not exist."
         ).to_response()
@@ -171,7 +171,7 @@ def update_note_title(request, note_id):
         return ErrorMessage(
             title="No note found",
             status=status.HTTP_404_NOT_FOUND,
-            instance=request.get_absolute_url(),
+            instance=request.build_absolute_uri(),
             code="N0549",
             detail="This note cannot be retrieved."
         ).to_response()
@@ -226,14 +226,14 @@ def create_note_share_link(request, note_id):
         return ErrorMessage(
             title="Note not found",
             status=status.HTTP_404_NOT_FOUND,
-            instance=request.get_absolute_url(),
+            instance=request.build_absolute_uri(),
             code="N1012",
             detail="This note cannot be retrieved."
         ).to_response()
     return ErrorMessage(
         title="Failed to create share link",
         status=status.HTTP_400_BAD_REQUEST,
-        instance=request.get_absolute_url(),
+        instance=request.build_absolute_uri(),
         code="N1001",
         detail="Failed to create share link."
     ).to_response()
@@ -251,7 +251,7 @@ def read_note_via_share_link(request, perm_key):
             return ErrorMessage(
                 title="Access Denied",
                 status=status.HTTP_401_UNAUTHORIZED,
-                instance=request.get_absolute_url(),
+                instance=request.build_absolute_uri(),
                 code="N1401",
                 detail="Password is required."
             ).to_response()
@@ -261,7 +261,7 @@ def read_note_via_share_link(request, perm_key):
             return ErrorMessage(
                 title="Incorrect Password",
                 status=status.HTTP_401_UNAUTHORIZED,
-                instance=request.get_absolute_url(),
+                instance=request.build_absolute_uri(),
                 code="N1402",
                 detail="Provided password is incorrect."
             ).to_response()
@@ -284,7 +284,7 @@ def read_note_via_share_link(request, perm_key):
         return ErrorMessage(
             title="Failed reading note",
             status=status.HTTP_404_NOT_FOUND,
-            instance=request.get_absolute_url(),
+            instance=request.build_absolute_uri(),
             code="N1404",
             detail="This note cannot be retrieved."
         ).to_response()
@@ -320,7 +320,7 @@ def disable_note_share_link(request):
         return ErrorMessage(
             title="No Share Link found",
             status=status.HTTP_404_NOT_FOUND,
-            instance=request.get_absolute_url(),
+            instance=request.build_absolute_uri(),
             code="N1411",
             detail="The link could not be found."
         ).to_response()

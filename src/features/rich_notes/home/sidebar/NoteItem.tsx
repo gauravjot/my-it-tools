@@ -53,11 +53,15 @@ export default function NoteItem({note, isActive, openNote, shareNote}: Props) {
 						openNote(note.id);
 					}}
 				>
-					<div className="text-foreground/90 font-medium line-height-125 truncate overflow-hidden whitespace-nowrap overflow-ellipsis">
+					<div
+						className={`${
+							isActive ? "text-foreground" : "text-foreground/80"
+						} font-medium text-md line-height-125 truncate overflow-hidden whitespace-nowrap overflow-ellipsis`}
+					>
 						{note.title}
 					</div>
 
-					<div className="text-xs mt-1 whitespace-nowrap overflow-hidden">
+					<div className="text-xs truncate">
 						<span className="active-badge">Active</span>
 						<span className="text-foreground/60" title={`Modified ${timeSince(note.updated)}`}>
 							{dateTimePretty(note.updated)}

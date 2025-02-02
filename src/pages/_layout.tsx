@@ -18,7 +18,7 @@ export default function BaseSidebarLayout(props: {title: string; children: React
 				>
 					<Sidebar />
 				</div>
-				<div className="flex-1">{props.children}</div>
+				<div className="flex-1 bg-gray-100 dark:bg-zinc-950">{props.children}</div>
 				<Toaster />
 			</div>
 		</>

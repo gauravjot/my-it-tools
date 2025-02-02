@@ -3,18 +3,18 @@ export function datePretty(dt: string) {
 	const dd = x.getDate();
 	const yy = x.getFullYear();
 	const monthNames = [
-		"January",
-		"February",
+		"Jan",
+		"Feb",
 		"March",
 		"April",
 		"May",
 		"June",
 		"July",
-		"August",
-		"September",
-		"October",
-		"November",
-		"December",
+		"Aug",
+		"Sept",
+		"Oct",
+		"Nov",
+		"Dec",
 	];
 	return monthNames[x.getMonth()] + " " + dd + ", " + yy;
 }

@@ -20,6 +20,7 @@ import {BACKEND_ENDPOINT} from "@/config";
 import BaseSidebarLayout from "./_layout";
 import Spinner from "@/components/ui/spinner/Spinner";
 import {ChevronsRight} from "lucide-react";
+import {useTheme} from "@/components/theme-provider";
 
 // Lazy imports
 const Editor = lazy(() => import("@/features/rich_notes/home/editor/Editor"));
@@ -27,6 +28,7 @@ const ShareNotePopup = lazy(() => import("@/features/rich_notes/home/ShareNotePo
 
 export default function RichNotesPage() {
 	const {noteid} = useParams(); /* from url: '/note/{noteid}' */
+	const theme = useTheme();
 	const navigate = useNavigate();
 	const user = useContext(UserContext);
 	const [status, setStatus] = useState<SavingState | null>(null);
@@ -223,7 +225,7 @@ export default function RichNotesPage() {
 							>
 								<ChevronsRight
 									size={18}
-									color={"#fff"}
+									color={theme.theme === "dark" ? "#000" : "#fff"}
 									className={"align-text-top transition-all " + (isSidebarOpen ? "rotate-180" : "")}
 								/>
 							</button>

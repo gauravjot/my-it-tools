@@ -14,6 +14,6 @@ export async function getSharedNote(shareid: string, password: string) {
 			}
 		)
 		.then(function (response) {
-			return response.data.data as SharedNoteType;
+			return response.data as SharedNoteType;
 		});
 }

@@ -1,5 +1,5 @@
 import {Button} from "@/components/ui/button";
-import {FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
+import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 import {Input} from "@/components/ui/input";
 import {handleAxiosError} from "@/lib/HandleAxiosError";
 import {dateTimePretty} from "@/lib/dateTimeUtils";
@@ -65,17 +65,22 @@ export default function TitleUpdateDialog(props: IEditNoteNameDialogProps) {
 
 	return (
 		<>
-			<div className="max-w-[380px] py-4 px-5 w-4/5 bg-white rounded-2xl shadow-md relative z-10">
+			<div className="max-w-[380px] py-4 px-5 w-4/5 bg-background rounded-2xl shadow-md relative z-10">
 				<div className="flex justify-between place-items-center mb-3">
-					<h3 className="text-black select-none">Edit Note Title</h3>
-					<Button variant={"ghost"} onClick={closeDialog}>
-						<X size={18} />
+					<h3 className="text-foreground select-none font-semibold text-lg">Edit Note Title</h3>
+					<Button variant={"ghost"} className="aspect-square p-0" onClick={closeDialog}>
+						<X size={22} />
 					</Button>
 				</div>
-				<div className="mt-6 mb-4">
-					<p className="text-sm font-medium text-gray-800 mb-px select-none">Selected Note</p>
-					<p className="text-sm text-gray-500">{props.note.title}</p>
-					<p className="text-sm text-gray-500">Updated on {dateTimePretty(props.note.updated)}</p>
+				<div className="mt-6 mb-4 bg-muted py-1 px-2 rounded text-foreground">
+					<p className="text-sm font-medium mb-1 select-none">Selected Note</p>
+					<p className="text-sm">
+						<b>Title:</b> <span className="text-muted-foreground">{props.note.title}</span>
+					</p>
+					<p className="text-sm">
+						<b>Updated on:</b>{" "}
+						<span className="text-muted-foreground"> {dateTimePretty(props.note.updated)}</span>
+					</p>
 				</div>
 				{error && <p className="text-sm text-red-600 bg-red-100 px-2 mt-3 py-1 rounded">{error}</p>}
 				{mutation.isSuccess && (
@@ -85,30 +90,37 @@ export default function TitleUpdateDialog(props: IEditNoteNameDialogProps) {
 					</p>
 				)}
 				{!mutation.isSuccess ? (
-					<form
-						onSubmit={form.handleSubmit((d) => {
-							mutation.mutate({editnotename: d.editnotename});
-						})}
-					>
-						<fieldset disabled={mutation.isPending}>
-							<FormField
-								control={form.control}
-								name="editnotename"
-								render={({field}) => (
-									<FormItem>
-										<FormLabel>New Note Title</FormLabel>
-										<FormControl>
-											<Input className="w-full" {...field} />
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<Button disabled={mutation.isPending} type="submit" className="w-full">
-								Save
-							</Button>
-						</fieldset>
-					</form>
+					<Form {...form}>
+						<form
+							onSubmit={form.handleSubmit((d) => {
+								mutation.mutate({editnotename: d.editnotename});
+							})}
+						>
+							<fieldset disabled={mutation.isPending}>
+								<FormField
+									control={form.control}
+									name="editnotename"
+									render={({field}) => (
+										<FormItem>
+											<FormLabel>New Note Title</FormLabel>
+											<FormControl>
+												<Input className="w-full" {...field} />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<Button
+									variant={"accent"}
+									disabled={mutation.isPending}
+									type="submit"
+									className="w-full mt-4"
+								>
+									Save
+								</Button>
+							</fieldset>
+						</form>
+					</Form>
 				) : (
 					<div className="mt-5">
 						<Button className="w-full" variant={"ghost"} onClick={closeDialog}>

@@ -1,15 +1,6 @@
-import {
-	getActiveStyles,
-	getTextBlockStyle,
-	getTextAlignStyle,
-	hasActiveLinkAtSelection,
-	toggleBlockType,
-	toggleLinkAtSelection,
-	toggleStyle,
-} from "./EditorUtils";
+import {toggleBlockType, toggleLinkAtSelection} from "./EditorUtils";
 
-import React, {useCallback, useContext} from "react";
-import {useSlateStatic} from "slate-react";
+import React, {useContext} from "react";
 import {UserContext} from "@/App";
 import {NoteType} from "@/types/rich_notes/api";
 import TitleUpdateDialog from "../TitleUpdateDialog";
@@ -39,6 +30,7 @@ import {
 	Text,
 	Underline,
 } from "lucide-react";
+import {BaseEditor, Editor, Element} from "slate";
 
 const PARAGRAPH_STYLES = ["h1", "h2", "h3", "h4", "codeblock", "quote", "ul", "ol"];
 const CHARACTER_STYLES = [
@@ -53,22 +45,19 @@ const CHARACTER_STYLES = [
 ];
 const TEXT_ALIGN = ["left", "center", "right", "justify"];
 
-function Toolbar({note}: {note: NoteType | null}) {
-	const editor = useSlateStatic();
+function Toolbar({note, editor}: {note: NoteType | null; editor: BaseEditor | null}) {
 	const userToken = useContext(UserContext);
 	const [isRenameDialogOpen, setIsRenameDialogOpen] = React.useState(false);
 
-	const onBlockTypeChange = useCallback(
-		(targetType: string) => {
-			if (targetType === "multiple") {
-				return;
-			}
-			toggleBlockType(editor, targetType);
-		},
-		[editor]
-	);
-
-	const blockType = getTextBlockStyle(editor);
+	const onBlockTypeChange = (targetType: string) => {
+		if (editor === null) {
+			return;
+		}
+		if (targetType === "multiple") {
+			return;
+		}
+		toggleBlockType(editor, targetType);
+	};
 
 	const closeEditNameDialog = () => setIsRenameDialogOpen(false);
 
@@ -83,12 +72,12 @@ function Toolbar({note}: {note: NoteType | null}) {
 				</div>
 			)}
 			<div className="top-16 lg:top-0 z-30 sticky print:hidden" id="toolbar">
-				<div className="bg-gray-50 px-1 mt-1 shadow-md rounded ab-toolbar">
+				<div className="bg-zinc-50 px-1 mt-1 shadow-md rounded ab-toolbar">
 					<div className="py-2 line-height-150 space-y-1">
 						{/* Dropdown for paragraph styles */}
-						<div className="border-r-2 border-gray-300 pr-3 inline-block">
+						<div className="border-r-2 border-zinc-300 pr-3 inline-block">
 							<ElementSelect
-								title={getIconAndLabel(blockType ?? "paragraph").label}
+								editor={editor}
 								elements={PARAGRAPH_STYLES}
 								onSelect={onBlockTypeChange}
 							/>
@@ -102,50 +91,33 @@ function Toolbar({note}: {note: NoteType | null}) {
 										key={style}
 										characterstyle={style}
 										label={style}
-										isActive={getActiveStyles(editor).has(style)}
+										isActive={isMarkActive(editor, style)}
 										onMouseDown={(event: MouseEvent) => {
 											event.preventDefault();
-											toggleStyle(editor, style);
+											if (editor) {
+												toggleMark(editor, style);
+											}
 										}}
 									/>
 								))}
 							</div>
 							{/* Link Button */}
-							<div className="border-r-2 border-gray-300 inline-block pr-3">
+							<div className="border-r-2 border-zinc-300 inline-block pr-3">
 								<ToolBarButton
-									isActive={hasActiveLinkAtSelection(editor)}
+									isActive={isMarkActive(editor, "link")}
 									label={"link"}
-									onMouseDown={() => toggleLinkAtSelection(editor)}
+									onMouseDown={() => {
+										if (editor) {
+											toggleLinkAtSelection(editor);
+											toggleMark(editor, "link");
+										}
+									}}
 								/>
 							</div>
-
-							{/* Image Upload Button
-          <label
-            className="ml-3 p-1 text-xs rounded aspect-square cursor-pointer"
-            htmlFor="image-upload"
-          >
-            <span
-              className={
-                "ic ic-md ic-black align-middle " + getIconForButton("image")
-              }
-            ></span>
-          </label>
-          <input
-            type="file"
-            id="image-upload"
-            className="hidden"
-            accept="image/png, image/jpeg"
-            onChange={onImageSelected}
-          />
-          */}
 						</div>
 						{/* Options for text Alignment */}
 						<div className="pr-3 inline-block">
-							<ElementSelect
-								title={getIconAndLabel(getTextAlignStyle(editor) ?? "paragraph").label}
-								elements={TEXT_ALIGN}
-								onSelect={onBlockTypeChange}
-							/>
+							<ElementSelect editor={editor} elements={TEXT_ALIGN} onSelect={onBlockTypeChange} />
 						</div>
 					</div>
 				</div>
@@ -169,7 +141,7 @@ function ToolBarButton(props: any) {
 		<button
 			variant=""
 			className={
-				(isActive ? "bg-gray-300 hover:outline outline-1 outline-gray-400 " : "hover:bg-gray-300") +
+				(isActive ? "bg-zinc-300 hover:outline outline-1 outline-zinc-400 " : "hover:bg-zinc-300") +
 				" infotrig ml-3 p-1 text-xs aspect-square"
 			}
 			active={isActive ? "true" : "false"}
@@ -178,6 +150,30 @@ function ToolBarButton(props: any) {
 			{getIconForButton(label, isActive)}
 			<div className="infomsg mt-3 z-30 whitespace-nowrap">{getTitleForTool(label)}</div>
 		</button>
+	);
+}
+
+function ElementSelect(props: any) {
+	const {editor, elements, onSelect} = props;
+	return (
+		<div className="inline-block">
+			{elements.map((element: any, index: number) => (
+				<button
+					key={index}
+					className={
+						(isBlockActive(editor, element)
+							? "bg-zinc-300 hover:outline outline-1 outline-zinc-400 "
+							: "hover:bg-zinc-300") + " infotrig ml-3 p-1 text-xs aspect-square"
+					}
+					onClick={() => {
+						onSelect(element);
+					}}
+				>
+					{getIconAndLabel(element).icon}
+					<div className="infomsg mt-3 z-30 whitespace-nowrap">{getTitleForTool(element)}</div>
+				</button>
+			))}
+		</div>
 	);
 }
 
@@ -307,35 +303,39 @@ function getIconAndLabel(style: string, isActive: boolean = false) {
 	}
 }
 
-function Element({element, title, onSelect}: any) {
-	const label = getIconAndLabel(element).label;
-	const e = getIconAndLabel(element, title === label || element.align === label);
-	return (
-		<button
-			className={
-				(title === e.label || element.align === e.label
-					? "bg-gray-300 hover:outline outline-1 outline-gray-400 "
-					: "hover:bg-gray-300") + " infotrig ml-3 p-1 text-xs aspect-square"
-			}
-			onClick={() => {
-				onSelect(element);
-			}}
-		>
-			{e.icon}
-			<div className="infomsg mt-3 z-30 whitespace-nowrap">{getTitleForTool(element)}</div>
-		</button>
-	);
-}
+const toggleMark = (editor: BaseEditor | null, format: string) => {
+	if (editor === null) {
+		return;
+	}
+	const isActive = isMarkActive(editor, format);
 
-function ElementSelect(props: any) {
-	const {elements, title, onSelect} = props;
-	return (
-		<div className="inline-block">
-			{elements.map((element: any, index: number) => (
-				<span key={index}>
-					<Element element={element} title={title} onSelect={onSelect} />
-				</span>
-			))}
-		</div>
+	if (isActive) {
+		Editor.removeMark(editor, format);
+	} else {
+		Editor.addMark(editor, format, true);
+	}
+};
+const isMarkActive = (editor: BaseEditor | null, format: any) => {
+	if (editor === null) {
+		return false;
+	}
+	const marks = Editor.marks(editor);
+	return marks ? Object.keys(marks).includes(format) === true : false;
+};
+
+const isBlockActive = (editor: BaseEditor | null, format: string, blockType = "type") => {
+	if (editor === null) {
+		return false;
+	}
+	const {selection} = editor;
+	if (!selection) return false;
+
+	const [match] = Array.from(
+		Editor.nodes(editor, {
+			at: Editor.unhangRange(editor, selection),
+			match: (n) => !Editor.isEditor(n) && Element.isElement(n) && (n as any)[blockType] === format,
+		})
 	);
-}
+
+	return !!match;
+};

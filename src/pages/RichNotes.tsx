@@ -187,7 +187,7 @@ export default function RichNotesPage() {
 	}, [user, note, noteid, openNote]);
 
 	return (
-		<BaseSidebarLayout title={"Expense Tracker"}>
+		<BaseSidebarLayout title={"Rich Notes"}>
 			<div className="App min-h-screen">
 				<div className="mx-auto lg:flex w-full relative">
 					<div

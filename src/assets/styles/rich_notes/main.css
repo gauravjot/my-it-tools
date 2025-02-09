@@ -92,7 +92,7 @@
 
 .sidebar-notelist-item {
 	@apply flex relative text-gray-600 px-3 transition-all rounded mx-2 my-1;
-	@apply hover:bg-foreground/10;
+	@apply hover:bg-foreground/10 focus-within:bg-foreground/10;
 }
 .sidebar-notelist-item[aria-current="true"] {
 	@apply pl-3 pb-0.5 border-l-8 border-accent-600 dark:border-accent-500 bg-accent-100 dark:bg-accent-500/10;

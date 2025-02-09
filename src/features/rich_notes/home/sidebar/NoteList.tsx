@@ -81,7 +81,7 @@ export default function NoteList({openNote, shareNote, currentNote}: Props) {
 						return (
 							<div key={note.id}>
 								{monthYear(note.updated) !== count ? (
-									<div className="sticky top-0 z-10 rounded mx-2 mt-2 mb-1 text-xs text-foreground/70 font-medium bg-zinc-200 dark:bg-zinc-900 px-4 py-1.5 pb-1 tracking-wide user-select-none whitespace-nowrap overflow-hidden">
+									<div className="sticky top-0 z-10 rounded mx-2 mt-2 mb-1 text-xs text-foreground/70 font-medium bg-zinc-200 dark:bg-zinc-900 px-3.5 py-1 tracking-wide user-select-none whitespace-nowrap overflow-hidden">
 										{(count = monthYear(note.updated))}
 									</div>
 								) : (

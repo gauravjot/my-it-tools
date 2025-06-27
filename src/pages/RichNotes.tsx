@@ -128,6 +128,7 @@ export default function RichNotesPage() {
 									e instanceof Error ? e.message : "Unknown"
 								}`,
 								variant: "destructive",
+								duration: 2000,
 							});
 							setDocument(ExampleDocument);
 						}

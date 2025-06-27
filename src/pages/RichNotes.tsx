@@ -21,6 +21,7 @@ import BaseSidebarLayout from "./_layout";
 import Spinner from "@/components/ui/spinner/Spinner";
 import {ChevronsRight} from "lucide-react";
 import {useTheme} from "@/components/theme-provider";
+import {useToast} from "@/components/ui/use-toast";
 
 // Lazy imports
 const Editor = lazy(() => import("@/features/rich_notes/home/editor/Editor"));
@@ -39,6 +40,7 @@ export default function RichNotesPage() {
 	const [shareNote, setShareNote] = useState<NoteListItemType | null>(null);
 	const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 	const queryClient = useQueryClient();
+	const {toast} = useToast();
 
 	const updateNoteMutation = useMutation({
 		mutationFn: (payload: UpdateNoteContentType) => {
@@ -115,9 +117,18 @@ export default function RichNotesPage() {
 						// set note
 						setNote(response.data);
 						try {
+							if (response.data.content === null) {
+								throw new Error("Note is either empty or corrupted. It cannot be recovered.");
+							}
 							setDocument(JSON.parse(response.data.content));
 						} catch (e) {
-							// TODO: Let user know that the note is corrupted
+							// Let user know that the note is corrupted
+							toast({
+								description: `Some error has occured: ${
+									e instanceof Error ? e.message : "Unknown"
+								}`,
+								variant: "destructive",
+							});
 							setDocument(ExampleDocument);
 						}
 						setIsNoteLoading(false);

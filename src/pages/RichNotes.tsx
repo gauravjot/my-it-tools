@@ -1,26 +1,15 @@
-import {useState, useCallback, useEffect, useContext, lazy, Suspense} from "react";
-import axios from "axios";
+import {useState, useContext, lazy, Suspense, useEffect} from "react";
 import "@/assets/styles/rich_notes/main.css";
-import _ from "lodash";
-import {useParams, useNavigate} from "react-router-dom";
-import {NoteType} from "@/types/rich_notes/api";
+import {useParams} from "react-router-dom";
 import RichNotesSidebar from "@/features/rich_notes/home/sidebar/Sidebar";
-import NoteStatus, {SavingState} from "@/features/rich_notes/home/NoteStatusIndicator";
+import NoteStatus from "@/features/rich_notes/home/NoteStatusIndicator";
 import {NoteListItemType} from "@/types/rich_notes/note";
-import {
-	UpdateNoteContentType,
-	updateNoteContent,
-} from "@/services/rich_notes/note/update_note_content";
-import {createNote} from "@/services/rich_notes/note/create_note";
-import {NOTE_STATUS} from "@/features/rich_notes/home/NoteStatusOptions";
 import {UserContext} from "@/App";
-import {ExampleDocument, SlateDocumentType} from "@/lib/rich_notes_utils";
-import {useMutation, useQueryClient} from "@tanstack/react-query";
-import {BACKEND_ENDPOINT} from "@/config";
 import BaseSidebarLayout from "./_layout";
 import Spinner from "@/components/ui/spinner/Spinner";
 import {ChevronsRight} from "lucide-react";
 import {useTheme} from "@/components/theme-provider";
+import {useEditorStateStore, State} from "@/zustand/EditorState";
 import {useToast} from "@/components/ui/use-toast";
 
 // Lazy imports
@@ -30,173 +19,46 @@ const ShareNotePopup = lazy(() => import("@/features/rich_notes/home/ShareNotePo
 export default function RichNotesPage() {
 	const {noteid} = useParams(); /* from url: '/note/{noteid}' */
 	const theme = useTheme();
-	const navigate = useNavigate();
 	const user = useContext(UserContext);
-	const [status, setStatus] = useState<SavingState | null>(null);
-	const [note, setNote] = useState<NoteType | null>(null);
-	const [document, setDocument] = useState<SlateDocumentType>(ExampleDocument);
-	const [isNoteLoading, setIsNoteLoading] = useState(false);
 	const [sharePopupNote, setSharePopupNote] = useState(false);
 	const [shareNote, setShareNote] = useState<NoteListItemType | null>(null);
 	const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-	const queryClient = useQueryClient();
 	const {toast} = useToast();
 
-	const updateNoteMutation = useMutation({
-		mutationFn: (payload: UpdateNoteContentType) => {
-			return user ? updateNoteContent(payload) : Promise.reject("Note not found");
-		},
-		onSuccess: (res) => {
-			const response = res as NoteType;
-			if (note?.id === response.id) {
-				setNote(response);
-			}
-			setTimeout(() => {
-				setStatus(null);
-			}, 500);
-			window.onbeforeunload = null;
-		},
-		onError: () => {
-			setStatus(NOTE_STATUS.failed);
-		},
-	});
+	const EditorState = useEditorStateStore();
 
-	const createNoteMutation = useMutation({
-		mutationFn: (payload: {title: string; content: SlateDocumentType}) => {
-			return user ? createNote(payload) : Promise.reject("User not found");
-		},
-		onSuccess: (res) => {
-			setStatus(null);
-			if (note?.id === res.id) {
-				setNote(res);
-			}
-			navigate("/note/" + res.id);
-			window.onbeforeunload = null;
-			queryClient.invalidateQueries({queryKey: ["notes-query"]});
-		},
-		onError: () => {
-			setStatus(NOTE_STATUS.failed);
-		},
-	});
-
-	const saveNote = (content: SlateDocumentType, note: NoteType | null) => {
-		setStatus(NOTE_STATUS.saving);
-		const title = note ? note.title : "Untitled";
-		if (user) {
-			if (note) {
-				// Update note
-				updateNoteMutation.mutate({content: content, note_id: note.id});
-			} else {
-				// Create note
-				createNoteMutation.mutate({title, content});
-			}
-		} else {
-			setStatus(NOTE_STATUS.failed);
-		}
-	};
-
-	const openNote = useCallback(
-		(n_id: NoteType["id"] | null) => {
-			if (user && n_id) {
-				setIsNoteLoading(true);
-				const config = {
-					headers: {
-						"Content-Type": "application/json",
-					},
-					withCredentials: true,
-				};
-				axios
-					.get(BACKEND_ENDPOINT + "/api/rich_notes/" + n_id + "/", config)
-					.then(function (response) {
-						// Close the sidebar on mobile if open
-						if (window.innerWidth < 1024) {
-							setIsSidebarOpen(false);
-						}
-						// smooth scroll to top
-						window.scrollTo({top: 0, behavior: "smooth"});
-						// set note
-						setNote(response.data);
-						try {
-							if (response.data.content === null) {
-								throw new Error("Note is either empty or corrupted. It cannot be recovered.");
-							}
-							setDocument(JSON.parse(response.data.content));
-						} catch (e) {
-							// Let user know that the note is corrupted
-							toast({
-								description: `Some error has occured: ${
-									e instanceof Error ? e.message : "Unknown"
-								}`,
-								variant: "destructive",
-								duration: 2000,
-							});
-							setDocument(ExampleDocument);
-						}
-						setIsNoteLoading(false);
-						navigate("/rich-notes/" + n_id);
-					})
-					.catch(function (error) {
-						setIsNoteLoading(false);
-						if (error.response.data.code === "N0404") {
-							// Note not found
-							navigate("/");
-						}
-					});
-			} else {
-				navigate("/");
-			}
-		},
-		[navigate, user]
-	);
-
-	// eslint-disable-next-line react-hooks/exhaustive-deps
-	const editorDebounced = useCallback(
-		_.debounce(
-			(note: NoteType, value: SlateDocumentType) => {
-				if (user) {
-					// If user is logged in then save the note
-					saveNote(value, note);
-				} else {
-					setStatus(null);
-				}
-			},
-			500,
-			{leading: false, trailing: true, maxWait: 60000}
-		),
-		[user]
-	);
-
-	const handleEditorChange = useCallback(
-		(document: SlateDocumentType, note: NoteType | null, value: SlateDocumentType) => {
-			/**
-			 * We need to pass `document` and `note` instead of reading from document level
-			 * variable to prevent wrongful saves in case user switches to another note while
-			 * the previous note is still saving.
-			 */
-			if (!_.isEqual(value, note ? JSON.parse(note?.content) : document)) {
-				if (note) {
-					window.onbeforeunload = function () {
-						alert("Note is not yet saved. Please wait!");
-						return true;
-					};
-					editorDebounced(note, value);
-				}
-			}
-		},
-		[editorDebounced]
-	);
-
+	/**
+	 * If a user is logged in and a note ID is provided in the URL,
+	 * open the note in the editor. If the note is already open, do nothing.
+	 */
 	useEffect(() => {
-		if (!user) {
-			setNote(null);
-			setDocument(ExampleDocument);
-		} else {
-			// Check if url has note id and no note is open
-			if (noteid && !note) {
-				openNote(noteid);
-			}
+		if (
+			user &&
+			noteid &&
+			EditorState.note?.id !== noteid &&
+			EditorState.state !== State.LOADING_NOTE
+		) {
+			EditorState.openNote(noteid).then(() => {
+				// smooth scroll to top
+				window.scrollTo({top: 0, behavior: "smooth"});
+			});
+		} else if (!user) {
+			// Reset editor state if user is not logged in
+			EditorState.reset();
 		}
-	}, [user, note, noteid, openNote]);
+	}, [noteid, user, EditorState]);
+
+	// Handle error state when loading the note
+	useEffect(() => {
+		if (EditorState.state === State.ERROR_LOADING) {
+			toast({
+				title: "Error loading note",
+				description: `There was an error while loading the note. Please try again. ${EditorState.error}`,
+				variant: "destructive",
+				duration: 4000,
+			});
+		}
+	}, [EditorState.state, EditorState.error, toast]);
 
 	return (
 		<BaseSidebarLayout title={"Rich Notes"}>
@@ -209,9 +71,6 @@ export default function RichNotesPage() {
 					>
 						<div className="h-screen print:hidden max-h-screen overflow-y-auto min-w-0 w-full bg-secondary block border-r border-foreground/10 border-solid sticky top-0">
 							<RichNotesSidebar
-								currentNoteID={note ? note.id : null}
-								currentNote={note}
-								openNote={openNote}
 								openShareNote={(note: NoteListItemType) => {
 									setShareNote(note);
 									setSharePopupNote(true);
@@ -247,7 +106,11 @@ export default function RichNotesPage() {
 						{/*
 						 * Editor area
 						 */}
-						<div className={(isNoteLoading ? "blur-sm " : "") + "min-h-screen h-full"}>
+						<div
+							className={
+								(EditorState.state === State.LOADING_NOTE ? "blur-sm " : "") + "min-h-screen h-full"
+							}
+						>
 							<Suspense
 								fallback={
 									<div className="flex print:hidden place-items-center flex-row gap-4 justify-center min-h-screen h-full">
@@ -258,16 +121,12 @@ export default function RichNotesPage() {
 									</div>
 								}
 							>
-								<Editor
-									document={document}
-									onChange={(value) => handleEditorChange(document, note, value)}
-									key={note ? note.id : ""}
-									note={note}
-								/>
+								{/* Editor component */}
+								<Editor key={EditorState.note?.id} />
 							</Suspense>
-							<NoteStatus status={status} isLoggedIn={user ? true : false} />
+							<NoteStatus isLoggedIn={user ? true : false} />
 						</div>
-						{isNoteLoading && (
+						{EditorState.state === State.LOADING_NOTE && (
 							<div className="absolute print:hidden z-30 inset-0 flex justify-center place-items-center">
 								<Spinner color="black" size="xl" />
 							</div>
@@ -284,9 +143,9 @@ export default function RichNotesPage() {
 							closePopup={() => setSharePopupNote(false)}
 							open={sharePopupNote}
 						/>
-					) : note ? (
+					) : EditorState.note ? (
 						<ShareNotePopup
-							note={note}
+							note={EditorState.note}
 							closePopup={() => setSharePopupNote(false)}
 							open={sharePopupNote}
 						/>

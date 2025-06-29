@@ -63,7 +63,6 @@ export default function AddExpenseDialog({
 		mode: "all",
 	});
 	const onSubmit: SubmitHandler<z.infer<typeof schema>> = (data) => {
-		console.log(data);
 		addExpenseMutation.mutate(data);
 	};
 

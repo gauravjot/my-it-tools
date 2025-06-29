@@ -8,14 +8,15 @@ import {handleAxiosError} from "@/lib/HandleAxiosError";
 import {Button} from "@/components/ui/button";
 import {X} from "lucide-react";
 import {dateTimePretty} from "@/lib/dateTimeUtils";
+import {useEditorStateStore} from "@/zustand/EditorState";
 
 export interface IDeleteNoteDialogProps {
 	note: NoteListItemType;
 	closeFn: () => void;
-	openNote: (nid: NoteListItemType["id"] | null) => void;
 }
 
 export default function DeleteNoteDialog(props: IDeleteNoteDialogProps) {
+	const EditorState = useEditorStateStore();
 	const userContext = useContext(UserContext);
 	const [error, setError] = useState<string | null>(null);
 	const queryClient = useQueryClient();
@@ -27,7 +28,7 @@ export default function DeleteNoteDialog(props: IDeleteNoteDialogProps) {
 		onSuccess: () => {
 			setError(null);
 			queryClient.invalidateQueries({queryKey: ["notes-query", userContext?.id]});
-			props.openNote(null);
+			EditorState.reset();
 			closeDialog();
 		},
 		onError: (error: AxiosError) => {

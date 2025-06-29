@@ -1,47 +1,83 @@
-import {useCallback, useRef, useState} from "react";
+import _, {isEqual} from "lodash";
+import {useCallback, useRef, useState, KeyboardEventHandler, useContext, useEffect} from "react";
 import {Editable, Slate, withReact} from "slate-react";
-import {createEditor} from "slate";
+import {createEditor, Descendant} from "slate";
 import {withHistory} from "slate-history";
 import "@/assets/styles/rich_notes/editor.css";
 
 import {identifyLinksInTextIfAny, isLinkNodeAtSelection} from "./EditorUtils";
 import {EditorToolbar} from "./Toolbar";
-import {isEqual} from "lodash";
-import {ExampleDocument, SlateDocumentType, SlateNodeType} from "@/lib/rich_notes_utils";
-import {NoteType} from "@/types/rich_notes/api";
+import {ExampleDocument, SlateDocumentType} from "@/lib/rich_notes_utils";
 import useEditorConfig, {LinkEditor} from "@/hooks/rich_notes/useEditorConfig";
 import useSelection from "@/hooks/rich_notes/useSelection";
+import {State, useEditorStateStore} from "@/zustand/EditorState";
+import {NoteType} from "@/types/rich_notes/api";
+import {UserContext} from "@/App";
+import {useToast} from "@/components/ui/use-toast";
 
-export default function Editor({
-	document,
-	onChange,
-	note,
-}: {
-	document: SlateDocumentType;
-	onChange: (value: SlateNodeType[]) => void;
-	note: NoteType | null;
-}) {
+export default function Editor() {
+	const EditorState = useEditorStateStore();
+	const user = useContext(UserContext);
 	const [editor] = useState(() => withReact(withHistory(createEditor())));
 	const editorRef = useRef<HTMLDivElement>(null);
 	const {renderLeaf, renderElement, KeyBindings} = useEditorConfig(editor);
-	const [isEdited, setIsEdited] = useState(!isEqual(document, ExampleDocument) || false);
+	const {toast} = useToast();
 
-	const onKeyDown = useCallback(
-		(event: any) => KeyBindings.onKeyDown(editor, event),
+	console.log("Editor rerender");
+
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	const editorDebounced = useCallback(
+		_.debounce(
+			async (note: NoteType, value: SlateDocumentType) => {
+				await EditorState.saveNote(value, note);
+				window.onbeforeunload = null;
+			},
+			500,
+			{leading: false, trailing: true, maxWait: 60000}
+		),
+		[user]
+	);
+	// Handle error state when loading the note
+	useEffect(() => {
+		if (EditorState.state === State.ERROR_SAVING) {
+			toast({
+				title: "Error saving note",
+				description: `There was an error while saving the note. Please try again. ${EditorState.error}`,
+				variant: "destructive",
+				duration: 2000,
+			});
+		}
+	}, [EditorState.state, EditorState.error, toast]);
+
+	const onKeyDown: KeyboardEventHandler<HTMLDivElement> = useCallback(
+		(event) => KeyBindings.onKeyDown(editor, event),
 		[KeyBindings, editor]
 	);
 
 	const [previousSelection, selection, setSelection] = useSelection(editor);
 
-	// we update selection here because Slate fires an onChange even on pure selection change.
+	/**
+	 * Triggers when the editor content changes.
+	 * Updates the editor state, current selection, and identifies links in the text.
+	 */
 	const onChangeLocal = useCallback(
-		(doc: any) => {
-			setIsEdited(true);
-			onChange(doc);
+		(doc: Descendant[]) => {
 			setSelection(editor.selection);
 			identifyLinksInTextIfAny(editor);
+
+			// Save it IF the document is not equal to the current note content
+			// or if the note is not yet saved (i.e., EditorState.note is null)
+			if (!_.isEqual(doc, EditorState.note ? JSON.parse(EditorState.note?.content) : document)) {
+				if (EditorState.note) {
+					window.onbeforeunload = function () {
+						alert("Note is not yet saved. Please wait!");
+						return true;
+					};
+					editorDebounced(EditorState.note, doc as SlateDocumentType);
+				}
+			}
 		},
-		[onChange, setSelection, editor]
+		[EditorState, setSelection, editor, editorDebounced]
 	);
 
 	let selectionForLink = null;
@@ -52,9 +88,14 @@ export default function Editor({
 	}
 
 	return (
-		<Slate editor={editor} initialValue={document} onChange={onChangeLocal}>
-			<EditorToolbar note={note} editor={editor} />
-			{!isEdited ? (
+		<Slate
+			editor={editor}
+			initialValue={EditorState.document ?? ExampleDocument}
+			onChange={onChangeLocal}
+		>
+			<EditorToolbar note={EditorState.note} editor={editor} />
+			{isEqual(EditorState.document, ExampleDocument) &&
+			EditorState.state !== State.ERROR_LOADING ? (
 				<div className="z-10 top-1/2 mx-auto left-0 right-0 text-center font-thin text-2xl text-gray-300 user-select-none absolute">
 					start typing and we'll auto save
 				</div>
@@ -79,12 +120,17 @@ export default function Editor({
 									selectionForLink={selectionForLink}
 								/>
 							) : null}
-							<Editable
-								renderElement={renderElement}
-								renderLeaf={renderLeaf}
-								onKeyDown={onKeyDown}
-								spellCheck
-							/>
+							{EditorState.state !== State.LOADING_NOTE &&
+							EditorState.state !== State.ERROR_LOADING ? (
+								<Editable
+									renderElement={renderElement}
+									renderLeaf={renderLeaf}
+									onKeyDown={onKeyDown}
+									spellCheck
+								/>
+							) : (
+								<></>
+							)}
 						</div>
 					</div>
 				</div>

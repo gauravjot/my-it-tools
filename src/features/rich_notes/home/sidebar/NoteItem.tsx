@@ -3,25 +3,27 @@ import TitleUpdateDialog from "../TitleUpdateDialog";
 import {UserContext} from "@/App";
 import DeleteNoteDialog from "./DeleteNoteDialog";
 import {NoteListItemType} from "@/types/rich_notes/note";
-import {NoteType} from "@/types/rich_notes/api";
 import {dateTimePretty, timeSince} from "@/lib/dateTimeUtils";
 import {Edit, EllipsisVertical, Share2, Trash2} from "lucide-react";
 import {useTheme} from "@/components/theme-provider";
+import {useEditorStateStore} from "@/zustand/EditorState";
+import {useNavigate} from "react-router-dom";
 
 interface Props {
 	note: NoteListItemType;
-	openNote: (nid: NoteType["id"] | null) => void;
 	shareNote: (note: NoteListItemType) => void;
-	isActive: boolean;
 }
 
-export default function NoteItem({note, isActive, openNote, shareNote}: Props) {
+export default function NoteItem({note, shareNote}: Props) {
+	const EditorState = useEditorStateStore();
 	const isDark = useTheme().theme === "dark";
 	const optionsRef = React.useRef<HTMLDivElement>(null);
 	const [menuOpen, setMenuOpen] = React.useState(false);
 	const [showRenameDialogOpen, setShowRenameDialogOpen] = React.useState(false);
 	const [showDeleteDialog, setShowDeleteDialog] = React.useState(false);
 	const userContext = useContext(UserContext);
+	const navigate = useNavigate();
+	const isActive = EditorState.note?.id === note.id;
 
 	const closeMenu = (e: MouseEvent) => {
 		if (
@@ -36,6 +38,11 @@ export default function NoteItem({note, isActive, openNote, shareNote}: Props) {
 
 	const renameNote = () => setShowRenameDialogOpen(true);
 
+	const openNote = async () => {
+		// Navigate to the note
+		navigate("/rich-notes/" + note.id);
+	};
+
 	return (
 		<>
 			<div className="sidebar-notelist-item" aria-current={isActive}>
@@ -47,12 +54,7 @@ export default function NoteItem({note, isActive, openNote, shareNote}: Props) {
 						</div>
 					</div>
 				)}
-				<div
-					className="flex-grow pr-2 py-2 cursor-pointer overflow-hidden"
-					onClick={() => {
-						openNote(note.id);
-					}}
-				>
+				<div className="flex-grow pr-2 py-2 cursor-pointer overflow-hidden" onClick={openNote}>
 					<div
 						className={`${
 							isActive ? "text-foreground" : "text-foreground/80"
@@ -153,11 +155,7 @@ export default function NoteItem({note, isActive, openNote, shareNote}: Props) {
 			{showDeleteDialog && (
 				<div className="fixed inset-0 size-full flex place-items-center justify-center z-50">
 					<div className="bg-black/30 absolute inset-0"></div>
-					<DeleteNoteDialog
-						closeFn={() => setShowDeleteDialog(false)}
-						note={note}
-						openNote={openNote}
-					/>
+					<DeleteNoteDialog closeFn={() => setShowDeleteDialog(false)} note={note} />
 				</div>
 			)}
 		</>

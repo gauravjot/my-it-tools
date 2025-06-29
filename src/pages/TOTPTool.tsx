@@ -271,10 +271,7 @@ export default function TOTPTool() {
 												className="aspect-square size-6 p-0 opacity-30 hover:opacity-100"
 												onClick={() => {
 													const newArr = prevTotp.slice().reverse();
-													console.log(JSON.stringify(newArr));
-													console.log(index);
 													newArr.splice(index, 1);
-													console.log(newArr);
 													setPrevTotp(newArr.reverse());
 												}}
 											>

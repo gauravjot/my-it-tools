@@ -10,14 +10,13 @@ import {useQuery} from "@tanstack/react-query";
 import {monthYear} from "@/lib/dateTimeUtils";
 import {X} from "lucide-react";
 import {useTheme} from "@/components/theme-provider";
+import {useNavigate} from "react-router-dom";
 
 interface Props {
-	currentNote: NoteType["id"] | null;
-	openNote: (nid: NoteType["id"] | null) => void;
 	shareNote: (note: NoteListItemType) => void;
 }
 
-export default function NoteList({openNote, shareNote, currentNote}: Props) {
+export default function NoteList({shareNote}: Props) {
 	const userContext = useContext(UserContext);
 	const isDark = useTheme().theme === "dark";
 	const [showCreateBox, setShowCreateBox] = React.useState(false);
@@ -26,11 +25,18 @@ export default function NoteList({openNote, shareNote, currentNote}: Props) {
 		queryFn: () => (userContext ? getNoteList() : Promise.reject("User not logged in")),
 		enabled: !!userContext,
 	});
+	const navigate = useNavigate();
 
-	const newNoteCreated = (note: NoteType) => {
+	const newNoteCreated = async (note: NoteType) => {
 		setShowCreateBox(false);
+		// Reload notes list
+		reloadNotesList();
+		// Navigate to the new note
+		navigate("/rich-notes/" + note.id);
+	};
+
+	const reloadNotesList = () => {
 		notes.refetch();
-		openNote(note.id);
 	};
 
 	let count: string;
@@ -87,12 +93,7 @@ export default function NoteList({openNote, shareNote, currentNote}: Props) {
 								) : (
 									""
 								)}
-								<NoteItem
-									note={note}
-									openNote={openNote}
-									shareNote={shareNote}
-									isActive={note.id === currentNote}
-								/>
+								<NoteItem note={note} shareNote={shareNote} />
 							</div>
 						);
 					})}

@@ -1,38 +1,44 @@
 import Spinner from "@/components/ui/spinner/Spinner";
 import {NOTE_STATUS} from "./NoteStatusOptions";
+import {State, useEditorStateStore} from "@/zustand/EditorState";
 
 /*
 	Status toast types
 */
-export interface SavingState {
-	icon: "ic-cloud" | "ic-cloud-done" | "ic-cloud-fail" | "ic-edit";
-	color: "bg-slate-800" | "bg-green-800" | "bg-sky-600" | "bg-orange-700";
-	message: string;
-}
 
 export interface INoteStatusProps {
-	status: SavingState | null;
 	isLoggedIn: boolean;
 }
 
 export default function NoteStatus(props: INoteStatusProps) {
+	const EditorState = useEditorStateStore();
+
+	const status =
+		EditorState.state === State.SAVING_NOTE
+			? NOTE_STATUS.saving
+			: EditorState.state === State.ERROR_SAVING
+			? NOTE_STATUS.failed
+			: EditorState.state === State.EDITING_NOTE
+			? NOTE_STATUS.saved
+			: null;
+
 	return (
 		<>
 			{props.isLoggedIn ? (
-				props.status && (
+				status && (
 					<div
 						className={
 							"flex place-items-center gap-1.5 fixed bottom-0 right-0 shadow rounded-md px-2" +
 							" py-1 font-medium text-sm text-white z-30 m-6 " +
-							props.status.color
+							status.color
 						}
 					>
-						{props.status.message === NOTE_STATUS.saving.message ? (
+						{status.message === NOTE_STATUS.saving.message ? (
 							<Spinner color="white" size="xs" />
 						) : (
-							<span className={"ic ic-white align-middle " + props.status.icon}></span>
+							status.Icon
 						)}
-						<span>{props.status.message}</span>
+						<span>{status.message}</span>
 					</div>
 				)
 			) : (

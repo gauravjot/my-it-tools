@@ -1,4 +1,5 @@
 import {BACKEND_ENDPOINT} from "@/config";
+import {getCookie} from "@/lib/cookies";
 import {SlateDocumentType} from "@/lib/rich_notes_utils";
 import {NoteType} from "@/types/rich_notes/api";
 import axios from "axios";
@@ -18,6 +19,7 @@ export async function updateNoteContent(payload: UpdateNoteContentType) {
 		.put(BACKEND_ENDPOINT + "/api/rich_notes/" + payload.note_id + "/", JSON.stringify(payload), {
 			headers: {
 				"Content-Type": "application/json",
+				"X-CSRFToken": getCookie("csrftoken") || "", // CSRF token for security
 			},
 			withCredentials: true,
 		})

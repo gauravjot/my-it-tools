@@ -1,20 +1,19 @@
 import SideBarNotelistSkeleton from "@/components/skeleton/SidebarNotelistSkeleton";
 import {timeSince} from "@/lib/dateTimeUtils";
-import {NoteType} from "@/types/rich_notes/api";
 import {NoteListItemType} from "@/types/rich_notes/note";
+import {useEditorStateStore} from "@/zustand/EditorState";
 import {Suspense, lazy} from "react";
 
 // Lazy imports
 const NoteList = lazy(() => import("@/features/rich_notes/home/sidebar/NoteList"));
 
 interface ISidebarProps {
-	currentNoteID: NoteType["id"] | null;
-	currentNote: NoteType | null;
-	openNote: (nid: NoteType["id"] | null) => void;
 	openShareNote: (note: NoteListItemType) => void;
 }
 
 export default function RichNotesSidebar(props: ISidebarProps) {
+	const {note} = useEditorStateStore();
+
 	return (
 		<>
 			<Suspense fallback={<SideBarNotelistSkeleton />}>
@@ -22,10 +21,10 @@ export default function RichNotesSidebar(props: ISidebarProps) {
 					<div className="px-3 py-3 flex gap-2 place-items-center border-b border-px border-foreground/20">
 						<div className="flex-1">
 							<div className="text-lg font-semibold truncate text-foreground whitespace-nowrap">
-								{props.currentNote ? props.currentNote.title : "Untitled"}
+								{note ? note.title : "Untitled"}
 							</div>
 							<div className="text-xs text-foreground/50 align-middle block whitespace-nowrap truncate">
-								{props.currentNote ? `(modified ${timeSince(props.currentNote.updated)})` : ""}
+								{note ? `(modified ${timeSince(note.updated)})` : ""}
 							</div>
 						</div>
 						<div className="flex flex-col place-items-end gap-2">
@@ -45,7 +44,6 @@ export default function RichNotesSidebar(props: ISidebarProps) {
 											zoomValue = parseFloat(zoomValue);
 										}
 										zoomValue = ((zoomValue as number) / 3) * 16;
-										console.log(zoomValue);
 										document
 											.getElementById("editor")
 											?.style.setProperty("font-size", `${zoomValue}px`);
@@ -55,11 +53,7 @@ export default function RichNotesSidebar(props: ISidebarProps) {
 						</div>
 					</div>
 				</>
-				<NoteList
-					openNote={props.openNote}
-					shareNote={props.openShareNote}
-					currentNote={props.currentNoteID !== undefined ? props.currentNoteID : null}
-				/>
+				<NoteList shareNote={props.openShareNote} />
 			</Suspense>
 		</>
 	);

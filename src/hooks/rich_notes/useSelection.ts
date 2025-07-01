@@ -1,14 +1,16 @@
-import { useCallback, useRef, useState } from "react";
+import {useCallback, useRef, useState} from "react";
 
 import areEqual from "deep-equal";
-import { BaseEditor } from "slate";
-import { ReactEditor } from "slate-react";
+import {BaseEditor, BaseRange, BaseSelection} from "slate";
+import {ReactEditor} from "slate-react";
 
-export default function useSelection(editor: BaseEditor & ReactEditor) {
-	const [selection, setSelection] = useState(editor.selection);
-	const previousSelection = useRef<any>(null);
+export default function useSelection(
+	editor: BaseEditor & ReactEditor
+): [BaseRange | null, BaseSelection, (newSelection: BaseSelection) => void] {
+	const [selection, setSelection] = useState<BaseSelection>(editor.selection);
+	const previousSelection = useRef<BaseRange | null>(null);
 	const setSelectionOptimized = useCallback(
-		(newSelection: any) => {
+		(newSelection: BaseSelection) => {
 			if (areEqual(selection, newSelection)) {
 				return;
 			}

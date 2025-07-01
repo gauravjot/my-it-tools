@@ -1,4 +1,4 @@
-import React, {useContext} from "react";
+import React, {useCallback, useContext, useEffect} from "react";
 import CreateNote from "./CreateNote";
 import NoteItem from "./NoteItem";
 import {UserContext} from "@/App";
@@ -11,6 +11,7 @@ import {monthYear} from "@/lib/dateTimeUtils";
 import {X} from "lucide-react";
 import {useTheme} from "@/components/theme-provider";
 import {useNavigate} from "react-router-dom";
+import {useEditorStateStore} from "@/zustand/EditorState";
 
 interface Props {
 	shareNote: (note: NoteListItemType) => void;
@@ -27,17 +28,30 @@ export default function NoteList({shareNote}: Props) {
 	});
 	const navigate = useNavigate();
 
+	const reloadNotesList = useCallback(() => {
+		notes.refetch();
+	}, [notes]);
+
 	const newNoteCreated = async (note: NoteType) => {
 		setShowCreateBox(false);
-		// Reload notes list
-		reloadNotesList();
 		// Navigate to the new note
 		navigate("/rich-notes/" + note.id);
 	};
 
-	const reloadNotesList = () => {
-		notes.refetch();
-	};
+	// Subscribe to note updates that happen outside of this component
+	useEffect(() => {
+		useEditorStateStore.subscribe(
+			(state) => state.note?.id,
+			(currentNoteID, prevNoteID) => {
+				if (currentNoteID && currentNoteID !== prevNoteID) {
+					// If the note ID has changed, reload the notes list
+					reloadNotesList();
+					// add it to url
+					window.history.pushState({}, "", `/rich-notes/${currentNoteID}`);
+				}
+			}
+		);
+	}, [reloadNotesList]);
 
 	let count: string;
 

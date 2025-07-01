@@ -122,7 +122,7 @@ export default function RichNotesPage() {
 								}
 							>
 								{/* Editor component */}
-								<Editor key={EditorState.note?.id} />
+								<Editor />
 							</Suspense>
 							<NoteStatus isLoggedIn={user ? true : false} />
 						</div>

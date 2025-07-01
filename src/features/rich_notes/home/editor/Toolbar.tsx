@@ -1,9 +1,6 @@
+import {Button} from "@/components/ui/button";
 import {toggleBlockType, toggleLinkAtSelection} from "./EditorUtils";
 
-import React, {useContext} from "react";
-import {UserContext} from "@/App";
-import {NoteType} from "@/types/rich_notes/api";
-import TitleUpdateDialog from "../TitleUpdateDialog";
 import {
 	AlignCenter,
 	AlignJustify,
@@ -30,7 +27,7 @@ import {
 	Text,
 	Underline,
 } from "lucide-react";
-import {BaseEditor, Editor, Element} from "slate";
+import {BaseEditor, BaseSelection, Editor, Element} from "slate";
 
 const PARAGRAPH_STYLES = ["h1", "h2", "h3", "h4", "codeblock", "quote", "ul", "ol"];
 const CHARACTER_STYLES = [
@@ -45,10 +42,19 @@ const CHARACTER_STYLES = [
 ];
 const TEXT_ALIGN = ["left", "center", "right", "justify"];
 
-function Toolbar({note, editor}: {note: NoteType | null; editor: BaseEditor | null}) {
-	const userToken = useContext(UserContext);
-	const [isRenameDialogOpen, setIsRenameDialogOpen] = React.useState(false);
+export function EditorToolbar({
+	editor,
+	selection,
+}: {
+	editor: BaseEditor | null;
+	selection: string | null;
+}) {
+	const selectionTyped = selection ? JSON.parse(selection) : null;
 
+	/**
+	 * Toggles the block type of the selected text.
+	 * Used for: headings, code blocks, quotes, lists, paragraph justifications.
+	 */
 	const onBlockTypeChange = (targetType: string) => {
 		if (editor === null) {
 			return;
@@ -59,18 +65,8 @@ function Toolbar({note, editor}: {note: NoteType | null; editor: BaseEditor | nu
 		toggleBlockType(editor, targetType);
 	};
 
-	const closeEditNameDialog = () => setIsRenameDialogOpen(false);
-
 	return (
 		<>
-			{isRenameDialogOpen && note && userToken && (
-				<div className="fixed inset-0 z-[100] print:hidden">
-					<div className="fixed inset-0 bg-black/30 z-0" onClick={closeEditNameDialog}></div>
-					<div className="fixed inset-0 flex place-items-center justify-center z-[60]">
-						<TitleUpdateDialog note={note} closeFn={closeEditNameDialog} />
-					</div>
-				</div>
-			)}
 			<div className="top-16 lg:top-0 z-30 sticky print:hidden" id="toolbar">
 				<div className="bg-zinc-50 px-1 mt-1 shadow-md rounded ab-toolbar">
 					<div className="py-2 line-height-150 space-y-1">
@@ -79,6 +75,7 @@ function Toolbar({note, editor}: {note: NoteType | null; editor: BaseEditor | nu
 							<ElementSelect
 								editor={editor}
 								elements={PARAGRAPH_STYLES}
+								selection={selectionTyped}
 								onSelect={onBlockTypeChange}
 							/>
 						</div>
@@ -117,7 +114,12 @@ function Toolbar({note, editor}: {note: NoteType | null; editor: BaseEditor | nu
 						</div>
 						{/* Options for text Alignment */}
 						<div className="pr-3 inline-block">
-							<ElementSelect editor={editor} elements={TEXT_ALIGN} onSelect={onBlockTypeChange} />
+							<ElementSelect
+								editor={editor}
+								selection={selectionTyped}
+								elements={TEXT_ALIGN}
+								onSelect={onBlockTypeChange}
+							/>
 						</div>
 					</div>
 				</div>
@@ -126,52 +128,56 @@ function Toolbar({note, editor}: {note: NoteType | null; editor: BaseEditor | nu
 	);
 }
 
-export const EditorToolbar = React.memo(Toolbar, (prevProps, nextProps) => {
-	return (
-		prevProps.note?.id === nextProps.note?.id &&
-		prevProps.note?.title === nextProps.note?.title &&
-		prevProps.note?.updated === nextProps.note?.updated
-	);
-});
-
 // Text Formatting
-function ToolBarButton(props: any) {
+function ToolBarButton(props: {
+	label: string;
+	isActive: boolean;
+	characterstyle?: string;
+	[key: string]: unknown;
+}) {
 	const {label, isActive, ...otherProps} = props;
 	return (
-		<button
-			variant=""
+		<Button
+			variant="ghost"
+			size={"icon"}
 			className={
 				(isActive ? "bg-zinc-300 hover:outline outline-1 outline-zinc-400 " : "hover:bg-zinc-300") +
-				" infotrig ml-3 p-1 text-xs aspect-square"
+				" infotrig ml-1 p-0 size-8 text-xs aspect-square"
 			}
-			active={isActive ? "true" : "false"}
 			{...otherProps}
 		>
 			{getIconForButton(label, isActive)}
-			<div className="infomsg mt-3 z-30 whitespace-nowrap">{getTitleForTool(label)}</div>
-		</button>
+			<div className="infomsg -bottom-6 z-30 whitespace-nowrap">{getTitleForTool(label)}</div>
+		</Button>
 	);
 }
 
-function ElementSelect(props: any) {
-	const {editor, elements, onSelect} = props;
+/**
+ * Only one of the elements can be selected at a time.
+ * This component renders a list of buttons for each element type.
+ */
+function ElementSelect({
+	editor,
+	elements,
+	onSelect,
+	selection,
+}: {
+	editor: BaseEditor | null;
+	elements: string[];
+	onSelect: (targetType: string) => void;
+	selection: BaseSelection;
+}) {
 	return (
 		<div className="inline-block">
-			{elements.map((element: any, index: number) => (
-				<button
+			{elements.map((element: string, index: number) => (
+				<ToolBarButton
 					key={index}
-					className={
-						(isBlockActive(editor, element)
-							? "bg-zinc-300 hover:outline outline-1 outline-zinc-400 "
-							: "hover:bg-zinc-300") + " infotrig ml-3 p-1 text-xs aspect-square"
-					}
-					onClick={() => {
+					isActive={isBlockActive(editor, selection, element)}
+					label={element}
+					onMouseDown={() => {
 						onSelect(element);
 					}}
-				>
-					{getIconAndLabel(element).icon}
-					<div className="infomsg mt-3 z-30 whitespace-nowrap">{getTitleForTool(element)}</div>
-				</button>
+				/>
 			))}
 		</div>
 	);
@@ -179,6 +185,25 @@ function ElementSelect(props: any) {
 
 function getIconForButton(style: string, isActive: boolean) {
 	switch (style) {
+		case "h1":
+			return <Heading1 size={18} color={isActive ? "#000" : "#787878"} />;
+		case "h2":
+			return <Heading2 size={18} color={isActive ? "#000" : "#787878"} />;
+		case "h3":
+			return <Heading3 size={18} color={isActive ? "#000" : "#787878"} />;
+		case "h4":
+			return <Heading4 size={18} color={isActive ? "#000" : "#787878"} />;
+		case "paragraph":
+			return <Text size={18} color={isActive ? "#000" : "#787878"} />;
+		case "codeblock":
+			return <CodeSquare size={18} color={isActive ? "#000" : "#787878"} />;
+		case "quote":
+			return <Quote size={18} color={isActive ? "#000" : "#787878"} />;
+		case "ul":
+			return <List size={18} color={isActive ? "#000" : "#787878"} />;
+		case "ol":
+			return <ListOrdered size={18} color={isActive ? "#000" : "#787878"} />;
+
 		case "bold":
 			return <Bold size={18} color={isActive ? "#000" : "#787878"} />;
 		case "italic":
@@ -199,6 +224,18 @@ function getIconForButton(style: string, isActive: boolean) {
 			return <ImagePlus size={18} color={isActive ? "#000" : "#787878"} />;
 		case "link":
 			return <Link size={18} color={isActive ? "#000" : "#787878"} />;
+
+		case "left":
+			return <AlignLeft size={18} color={isActive ? "#000" : "#787878"} />;
+		case "right":
+			return <AlignRight size={18} color={isActive ? "#000" : "#787878"} />;
+		case "center":
+			return <AlignCenter size={18} color={isActive ? "#000" : "#787878"} />;
+		case "justify":
+			return <AlignJustify size={18} color={isActive ? "#000" : "#787878"} />;
+		case "multiple":
+			return <MinusSquare size={18} color={isActive ? "#000" : "#787878"} />;
+
 		default:
 			return <MinusSquare size={18} color={isActive ? "#000" : "#787878"} />;
 	}
@@ -206,6 +243,25 @@ function getIconForButton(style: string, isActive: boolean) {
 
 function getTitleForTool(tool: string) {
 	switch (tool) {
+		case "h1":
+			return "Heading 1";
+		case "h2":
+			return "Heading 2";
+		case "h3":
+			return "Heading 3";
+		case "h4":
+			return "Heading 4";
+		case "paragraph":
+			return "Paragraph";
+		case "codeblock":
+			return "Code Block";
+		case "quote":
+			return "Quotations";
+		case "ul":
+			return "Unordered List";
+		case "ol":
+			return "Ordered List";
+
 		case "bold":
 			return "Bold";
 		case "italic":
@@ -226,83 +282,26 @@ function getTitleForTool(tool: string) {
 			return "Add Image";
 		case "link":
 			return "Add Link";
-		default:
-			return getIconAndLabel(tool).label;
-	}
-}
-// Element Select
 
-function getIconAndLabel(style: string, isActive: boolean = false) {
-	switch (style) {
-		case "h1":
-			return {
-				label: "Heading 1",
-				icon: <Heading1 size={18} color={isActive ? "#000" : "#787878"} />,
-			};
-		case "h2":
-			return {
-				label: "Heading 2",
-				icon: <Heading2 size={18} color={isActive ? "#000" : "#787878"} />,
-			};
-		case "h3":
-			return {
-				label: "Heading 3",
-				icon: <Heading3 size={18} color={isActive ? "#000" : "#787878"} />,
-			};
-		case "h4":
-			return {
-				label: "Heading 4",
-				icon: <Heading4 size={18} color={isActive ? "#000" : "#787878"} />,
-			};
-		case "paragraph":
-			return {label: "Paragraph", icon: <Text size={18} color={isActive ? "#000" : "#787878"} />};
-		case "codeblock":
-			return {
-				label: "Code Block",
-				icon: <CodeSquare size={18} color={isActive ? "#000" : "#787878"} />,
-			};
-		case "quote":
-			return {label: "Quotations", icon: <Quote size={18} color={isActive ? "#000" : "#787878"} />};
-		case "multiple":
-			return {
-				label: "Multiple",
-				icon: <MinusSquare size={18} color={isActive ? "#000" : "#787878"} />,
-			};
 		case "left":
-			return {
-				label: "Align Left",
-				icon: <AlignLeft size={18} color={isActive ? "#000" : "#787878"} />,
-			};
+			return "Align Left";
 		case "right":
-			return {
-				label: "Align Right",
-				icon: <AlignRight size={18} color={isActive ? "#000" : "#787878"} />,
-			};
+			return "Align Right";
 		case "center":
-			return {
-				label: "Align Center",
-				icon: <AlignCenter size={18} color={isActive ? "#000" : "#787878"} />,
-			};
+			return "Align Center";
 		case "justify":
-			return {
-				label: "Justify Block",
-				icon: <AlignJustify size={18} color={isActive ? "#000" : "#787878"} />,
-			};
-		case "ul":
-			return {
-				label: "Unordered List",
-				icon: <List size={18} color={isActive ? "#000" : "#787878"} />,
-			};
-		case "ol":
-			return {
-				label: "Ordered List",
-				icon: <ListOrdered size={18} color={isActive ? "#000" : "#787878"} />,
-			};
+			return "Justify Block";
+		case "multiple":
+			return "Multiple Selections";
+
 		default:
-			throw new Error(`Unhandled style in getLabelForBlockStyle: ${style}`);
+			return "Unknown Tool";
 	}
 }
 
+/**
+ * This is for toggling text formatting marks like bold, italic, underline, etc.
+ */
 const toggleMark = (editor: BaseEditor | null, format: string) => {
 	if (editor === null) {
 		return;
@@ -315,7 +314,7 @@ const toggleMark = (editor: BaseEditor | null, format: string) => {
 		Editor.addMark(editor, format, true);
 	}
 };
-const isMarkActive = (editor: BaseEditor | null, format: any) => {
+const isMarkActive = (editor: BaseEditor | null, format: string) => {
 	if (editor === null) {
 		return false;
 	}
@@ -323,17 +322,21 @@ const isMarkActive = (editor: BaseEditor | null, format: any) => {
 	return marks ? Object.keys(marks).includes(format) === true : false;
 };
 
-const isBlockActive = (editor: BaseEditor | null, format: string, blockType = "type") => {
+const isBlockActive = (
+	editor: BaseEditor | null,
+	selection: BaseSelection | null,
+	element: string
+) => {
 	if (editor === null) {
 		return false;
 	}
-	const {selection} = editor;
 	if (!selection) return false;
 
 	const [match] = Array.from(
 		Editor.nodes(editor, {
 			at: Editor.unhangRange(editor, selection),
-			match: (n) => !Editor.isEditor(n) && Element.isElement(n) && (n as any)[blockType] === format,
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			match: (n) => !Editor.isEditor(n) && Element.isElement(n) && (n as any)["type"] === element,
 		})
 	);
 

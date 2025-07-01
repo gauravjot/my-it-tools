@@ -9,7 +9,7 @@ export default function BaseSidebarLayout(props: {title: string; children: React
 			<Helmet>
 				<title>{props.title}</title>
 			</Helmet>
-			<div className="relative w-full lg:flex">
+			<div className="relative w-full flex flex-col lg:flex-row h-screen">
 				<div
 					className={
 						"lg:w-72 lg:border-r lg:dark:border-zinc-800 h-16 lg:h-screen lg:max-h-screen lg:overflow-y-auto sticky lg:top-0 lg:left-0" +
@@ -18,8 +18,10 @@ export default function BaseSidebarLayout(props: {title: string; children: React
 				>
 					<Sidebar />
 				</div>
-				<div className="flex-1 bg-gray-100 dark:bg-zinc-950">{props.children}</div>
-				<Toaster />
+				<div className="flex-1 bg-gray-100 dark:bg-zinc-950">
+					{props.children}
+					<Toaster />
+				</div>
 			</div>
 		</>
 	);

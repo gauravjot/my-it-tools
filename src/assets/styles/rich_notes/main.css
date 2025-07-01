@@ -32,16 +32,16 @@
 }
 .sidebar-expand-btn {
 	@apply aspect-auto rounded-bl-none;
-	@apply size-10 w-auto h-10 flex justify-center place-items-center;
-	@apply hover:bg-zinc-500 transition-all pl-0.5 pr-1.5;
-	@apply shadow-md border-t border-r border-b rounded-r-md;
+	@apply w-auto h-12 flex justify-center place-items-center;
+	@apply hover:bg-zinc-500 transition-all pl-1.5 pr-2.5;
+	@apply shadow-md border-t border-r border-b rounded-r-lg opacity-90 lg:opacity-50;
 	@apply border-solid border-zinc-300;
 }
 .sidebar-expand-btn:hover {
-	@apply pl-1.5;
+	@apply pl-2 opacity-100;
 }
 .sidebar-expand-btn[aria-expanded="true"] {
-	@apply bg-zinc-800 dark:bg-white size-12 w-auto h-10;
+	@apply bg-zinc-800 dark:bg-white opacity-100;
 }
 .sidebar-expand-btn[aria-expanded="true"] span.ic {
 	@apply rotate-180;

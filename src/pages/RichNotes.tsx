@@ -82,7 +82,7 @@ export default function RichNotesPage() {
 					 * Toggle to close the sidebar
 					 */}
 					<>
-						<div className="print:hidden fixed top-10 lg:top-16 lg:mt-3 right-auto z-[500] h-0">
+						<div className="print:hidden fixed top-2 lg:top-14 lg:mt-3 right-auto z-[500] h-0">
 							<button
 								className="sidebar-expand-btn"
 								aria-expanded={isSidebarOpen ? "true" : "false"}

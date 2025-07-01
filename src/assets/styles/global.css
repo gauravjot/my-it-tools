@@ -105,6 +105,10 @@
 	border: hsl(var(--input)) 1px solid;
 }
 
+.focusable-button:focus {
+	@apply ring-2 ring-black/50 ring-offset-2;
+}
+
 /*
  * Dark Mode Toggler
  */

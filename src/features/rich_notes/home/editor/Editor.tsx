@@ -75,6 +75,8 @@ export default function Editor() {
 			// Otherwise, the state should be LOADING_NOTE, i.e. user was opening a note, then we should not change the editor key.
 			if (prevState.state !== State.SAVING_NOTE && currentState.state === State.EDITING_NOTE) {
 				setEditorKey(currentState.note?.id ?? "new-editor");
+			} else if (currentState.state === State.NEW_NOTE) {
+				setEditorKey("new-editor");
 			}
 		});
 

@@ -18,6 +18,7 @@ import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 import {zodResolver} from "@hookform/resolvers/zod";
+import {ExampleDocument} from "@/lib/rich_notes_utils";
 
 export default function RichNotesSharedPage() {
 	const {shareid} = useParams();
@@ -168,8 +169,13 @@ export default function RichNotesSharedPage() {
 							</button>
 						</div>
 						<div className="z-40">
-							{query.isSuccess && document ? (
-								<Slate editor={editor} initialValue={JSON.parse(query.data.noteContent)}>
+							{query.isSuccess ? (
+								<Slate
+									editor={editor}
+									initialValue={
+										query.data.noteContent ? JSON.parse(query.data.noteContent) : ExampleDocument
+									}
+								>
 									<div className="editor-container">
 										<div className="editor">
 											<div role="textbox">

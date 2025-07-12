@@ -68,7 +68,6 @@ export default function DeleteNoteDialog(props: IDeleteNoteDialogProps) {
 				cancelBtnRef.current.focus();
 			}
 		}, 100);
-		console.log("DeleteNoteDialog mounted, cancelBtnRef:", cancelBtnRef.current);
 	}, [cancelBtnRef]);
 
 	return (

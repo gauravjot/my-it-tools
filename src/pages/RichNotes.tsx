@@ -41,6 +41,10 @@ export default function RichNotesPage() {
 			EditorState.openNote(noteid).then(() => {
 				// smooth scroll to top
 				window.scrollTo({top: 0, behavior: "smooth"});
+				// if it is mobile, close the sidebar
+				if (window.innerWidth < 1024) {
+					setIsSidebarOpen(false);
+				}
 			});
 		} else if (!user) {
 			// Reset editor state if user is not logged in
@@ -61,7 +65,7 @@ export default function RichNotesPage() {
 	}, [EditorState.state, EditorState.error, toast]);
 
 	return (
-		<BaseSidebarLayout title={"Rich Notes"}>
+		<BaseSidebarLayout title={EditorState.note ? EditorState.note.title : `Rich Notes`}>
 			<div className="App min-h-screen">
 				<div className="mx-auto lg:flex w-full relative">
 					<div
@@ -82,7 +86,7 @@ export default function RichNotesPage() {
 					 * Toggle to close the sidebar
 					 */}
 					<>
-						<div className="print:hidden fixed top-2 lg:top-14 lg:mt-3 right-auto z-[500] h-0">
+						<div className="print:hidden fixed top-2 lg:top-[3.75rem] lg:mt-3 right-auto z-[500] h-0">
 							<button
 								className="sidebar-expand-btn"
 								aria-expanded={isSidebarOpen ? "true" : "false"}

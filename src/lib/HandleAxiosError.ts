@@ -10,15 +10,22 @@ export interface ErrorType {
 
 export function handleAxiosError(
 	error: AxiosError,
-	setReqError: Dispatch<SetStateAction<string | null>>
-) {
+	setReqError?: Dispatch<SetStateAction<string | null>>
+): string | void {
 	const msg = error.response?.data;
 	try {
 		const res = msg as ErrorType;
-		setReqError(
-			JSON.stringify(res.title).replaceAll('"', "").replaceAll("\\n", "\n") + " [" + res.code + "]"
-		);
+		const err =
+			JSON.stringify(res.title).replaceAll('"', "").replaceAll("\\n", "\n") + " [" + res.code + "]";
+		if (setReqError) {
+			setReqError(err);
+		} else {
+			return err;
+		}
 	} catch (err) {
-		setReqError(JSON.stringify(error.message).replaceAll('"', ""));
+		if (setReqError) {
+			setReqError(JSON.stringify(error.message).replaceAll('"', ""));
+		}
+		return JSON.stringify(error.message).replaceAll('"', "");
 	}
 }

@@ -69,7 +69,7 @@ export function EditorToolbar({
 		<>
 			<div className="top-16 lg:top-0 z-30 sticky print:hidden" id="toolbar">
 				<div className="bg-zinc-50 px-1 mt-1 shadow-md rounded ab-toolbar">
-					<div className="py-2 line-height-150 space-y-1">
+					<div className="py-2 line-height-150">
 						{/* Dropdown for paragraph styles */}
 						<div className="border-r-2 border-zinc-300 pr-3 inline-block">
 							<ElementSelect
@@ -136,6 +136,8 @@ function ToolBarButton(props: {
 	[key: string]: unknown;
 }) {
 	const {label, isActive, ...otherProps} = props;
+	const tool = getTool(label, isActive);
+
 	return (
 		<Button
 			variant="ghost"
@@ -146,8 +148,13 @@ function ToolBarButton(props: {
 			}
 			{...otherProps}
 		>
-			{getIconForButton(label, isActive)}
-			<div className="infomsg -bottom-6 z-30 whitespace-nowrap">{getTitleForTool(label)}</div>
+			{tool.Icon}
+			<div className="infomsg -bottom-10 z-30 whitespace-nowrap">
+				{tool.name}
+				{tool.shortcut ? (
+					<span className="block text-xs text-zinc-200 ml-1 tracking-tighter">{tool.shortcut}</span>
+				) : null}
+			</div>
 		</Button>
 	);
 }
@@ -183,119 +190,151 @@ function ElementSelect({
 	);
 }
 
-function getIconForButton(style: string, isActive: boolean) {
-	switch (style) {
-		case "h1":
-			return <Heading1 size={18} color={isActive ? "#000" : "#787878"} />;
-		case "h2":
-			return <Heading2 size={18} color={isActive ? "#000" : "#787878"} />;
-		case "h3":
-			return <Heading3 size={18} color={isActive ? "#000" : "#787878"} />;
-		case "h4":
-			return <Heading4 size={18} color={isActive ? "#000" : "#787878"} />;
-		case "paragraph":
-			return <Text size={18} color={isActive ? "#000" : "#787878"} />;
-		case "codeblock":
-			return <CodeSquare size={18} color={isActive ? "#000" : "#787878"} />;
-		case "quote":
-			return <Quote size={18} color={isActive ? "#000" : "#787878"} />;
-		case "ul":
-			return <List size={18} color={isActive ? "#000" : "#787878"} />;
-		case "ol":
-			return <ListOrdered size={18} color={isActive ? "#000" : "#787878"} />;
-
-		case "bold":
-			return <Bold size={18} color={isActive ? "#000" : "#787878"} />;
-		case "italic":
-			return <Italic size={18} color={isActive ? "#000" : "#787878"} />;
-		case "code":
-			return <Code size={18} color={isActive ? "#000" : "#787878"} />;
-		case "underline":
-			return <Underline size={18} color={isActive ? "#000" : "#787878"} />;
-		case "highlight":
-			return <Highlighter size={18} color={isActive ? "#000" : "#787878"} />;
-		case "strike":
-			return <Strikethrough size={18} color={isActive ? "#000" : "#787878"} />;
-		case "sub":
-			return <Subscript size={18} color={isActive ? "#000" : "#787878"} />;
-		case "sup":
-			return <Superscript size={18} color={isActive ? "#000" : "#787878"} />;
-		case "image":
-			return <ImagePlus size={18} color={isActive ? "#000" : "#787878"} />;
-		case "link":
-			return <Link size={18} color={isActive ? "#000" : "#787878"} />;
-
-		case "left":
-			return <AlignLeft size={18} color={isActive ? "#000" : "#787878"} />;
-		case "right":
-			return <AlignRight size={18} color={isActive ? "#000" : "#787878"} />;
-		case "center":
-			return <AlignCenter size={18} color={isActive ? "#000" : "#787878"} />;
-		case "justify":
-			return <AlignJustify size={18} color={isActive ? "#000" : "#787878"} />;
-		case "multiple":
-			return <MinusSquare size={18} color={isActive ? "#000" : "#787878"} />;
-
-		default:
-			return <MinusSquare size={18} color={isActive ? "#000" : "#787878"} />;
-	}
-}
-
-function getTitleForTool(tool: string) {
+function getTool(
+	tool: string,
+	isActive: boolean
+): {name: string; shortcut?: string; Icon: JSX.Element} {
 	switch (tool) {
 		case "h1":
-			return "Heading 1";
+			return {
+				name: "Heading 1",
+				shortcut: "Ctrl+Shift+1",
+				Icon: <Heading1 size={18} color={isActive ? "#000" : "#787878"} />,
+			};
 		case "h2":
-			return "Heading 2";
+			return {
+				name: "Heading 2",
+				shortcut: "Ctrl+Shift+2",
+				Icon: <Heading2 size={18} color={isActive ? "#000" : "#787878"} />,
+			};
 		case "h3":
-			return "Heading 3";
+			return {
+				name: "Heading 3",
+				shortcut: "Ctrl+Shift+3",
+				Icon: <Heading3 size={18} color={isActive ? "#000" : "#787878"} />,
+			};
 		case "h4":
-			return "Heading 4";
+			return {
+				name: "Heading 4",
+				shortcut: "Ctrl+Shift+4",
+				Icon: <Heading4 size={18} color={isActive ? "#000" : "#787878"} />,
+			};
 		case "paragraph":
-			return "Paragraph";
+			return {
+				name: "Paragraph",
+				shortcut: "Ctrl+Shift+P",
+				Icon: <Text size={18} color={isActive ? "#000" : "#787878"} />,
+			};
 		case "codeblock":
-			return "Code Block";
+			return {
+				name: "Code Block",
+				shortcut: "Ctrl+Shift+`",
+				Icon: <CodeSquare size={18} color={isActive ? "#000" : "#787878"} />,
+			};
 		case "quote":
-			return "Quotations";
+			return {
+				name: "Quoteblock",
+				Icon: <Quote size={18} color={isActive ? "#000" : "#787878"} />,
+			};
 		case "ul":
-			return "Unordered List";
+			return {
+				name: "Unordered List",
+				Icon: <List size={18} color={isActive ? "#000" : "#787878"} />,
+			};
 		case "ol":
-			return "Ordered List";
+			return {
+				name: "Ordered List",
+				Icon: <ListOrdered size={18} color={isActive ? "#000" : "#787878"} />,
+			};
 
 		case "bold":
-			return "Bold";
+			return {
+				name: "Bold",
+				shortcut: "Ctrl+B",
+				Icon: <Bold size={18} color={isActive ? "#000" : "#787878"} />,
+			};
 		case "italic":
-			return "Italic";
+			return {
+				name: "Italic",
+				shortcut: "Ctrl+I",
+				Icon: <Italic size={18} color={isActive ? "#000" : "#787878"} />,
+			};
 		case "code":
-			return "Inline Code";
+			return {
+				name: "Inline Code",
+				shortcut: "Ctrl+`",
+				Icon: <Code size={18} color={isActive ? "#000" : "#787878"} />,
+			};
 		case "underline":
-			return "Underline";
+			return {
+				name: "Underline",
+				shortcut: "Ctrl+U",
+				Icon: <Underline size={18} color={isActive ? "#000" : "#787878"} />,
+			};
 		case "highlight":
-			return "Text Highlight";
+			return {
+				name: "Highlight",
+				shortcut: "Ctrl+H",
+				Icon: <Highlighter size={18} color={isActive ? "#000" : "#787878"} />,
+			};
 		case "strike":
-			return "Text Strikethrough";
+			return {
+				name: "Strikethrough",
+				Icon: <Strikethrough size={18} color={isActive ? "#000" : "#787878"} />,
+			};
 		case "sub":
-			return "Subscript";
+			return {
+				name: "Subscript",
+				Icon: <Subscript size={18} color={isActive ? "#000" : "#787878"} />,
+			};
 		case "sup":
-			return "Superscript";
+			return {
+				name: "Superscript",
+				Icon: <Superscript size={18} color={isActive ? "#000" : "#787878"} />,
+			};
 		case "image":
-			return "Add Image";
+			return {
+				name: "Insert Image",
+				Icon: <ImagePlus size={18} color={isActive ? "#000" : "#787878"} />,
+			};
 		case "link":
-			return "Add Link";
+			return {
+				name: "Insert Link",
+				shortcut: "Ctrl+K",
+				Icon: <Link size={18} color={isActive ? "#000" : "#787878"} />,
+			};
 
 		case "left":
-			return "Align Left";
+			return {
+				name: "Align Left",
+				Icon: <AlignLeft size={18} color={isActive ? "#000" : "#787878"} />,
+			};
 		case "right":
-			return "Align Right";
+			return {
+				name: "Align Right",
+				Icon: <AlignRight size={18} color={isActive ? "#000" : "#787878"} />,
+			};
 		case "center":
-			return "Align Center";
+			return {
+				name: "Align Center",
+				Icon: <AlignCenter size={18} color={isActive ? "#000" : "#787878"} />,
+			};
 		case "justify":
-			return "Justify Block";
+			return {
+				name: "Justify",
+				Icon: <AlignJustify size={18} color={isActive ? "#000" : "#787878"} />,
+			};
 		case "multiple":
-			return "Multiple Selections";
+			return {
+				name: "Multiple Styles",
+				Icon: <MinusSquare size={18} color={isActive ? "#000" : "#787878"} />,
+			};
 
 		default:
-			return "Unknown Tool";
+			return {
+				name: "Unknown Tool",
+				Icon: <MinusSquare size={18} color={isActive ? "#000" : "#787878"} />,
+			};
 	}
 }
 

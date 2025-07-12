@@ -59,7 +59,7 @@ export default function NoteList({shareNote}: Props) {
 		<div className="">
 			<div className="relative mt-4 user-select-none flex flex-wrap">
 				<div className="flex-1 ml-4 mb-2.5">
-					<span className="font-sans text-foreground text-lg lg:ml-4 align-middle whitespace-nowrap overflow-hidden font-semibold">
+					<span className="font-sans text-foreground text-lg lg:ml-6 align-middle whitespace-nowrap overflow-hidden font-semibold">
 						Notes
 					</span>
 				</div>
@@ -101,7 +101,7 @@ export default function NoteList({shareNote}: Props) {
 						return (
 							<div key={note.id}>
 								{monthYear(note.updated) !== count ? (
-									<div className="sticky top-0 z-10 rounded mx-2 mt-2 mb-1 text-xs text-foreground/70 font-medium bg-zinc-200 dark:bg-zinc-900 px-3.5 py-1 tracking-wide user-select-none whitespace-nowrap overflow-hidden">
+									<div className="rounded mx-2 mt-2 mb-1 text-xs text-foreground/70 font-medium bg-zinc-200 dark:bg-zinc-900 px-3.5 py-1 tracking-wide user-select-none whitespace-nowrap overflow-hidden">
 										{(count = monthYear(note.updated))}
 									</div>
 								) : (

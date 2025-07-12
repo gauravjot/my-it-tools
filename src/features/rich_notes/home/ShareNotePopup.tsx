@@ -20,7 +20,7 @@ import {
 } from "@/services/rich_notes/note/disable_share_link";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 import {Input} from "@/components/ui/input";
-import {Checkbox} from "@radix-ui/react-checkbox";
+import {Checkbox} from "@/components/ui/checkbox";
 
 interface Props {
 	note: NoteListItemType;
@@ -28,12 +28,19 @@ interface Props {
 	open: boolean;
 }
 
-const ShareLinkCreateFormSchema = z.object({
-	title: z.string().min(1).max(255),
-	anon: z.boolean(),
-	pass_protect: z.boolean(),
-	password: z.string().max(255),
-});
+const ShareLinkCreateFormSchema = z
+	.object({
+		title: z.string().min(1).max(255),
+		anon: z.boolean(),
+		pass_protect: z.boolean(),
+		password: z.string().max(255).optional(),
+	})
+	.refine((data) => {
+		if (data.pass_protect) {
+			return data.password && data.password.length > 0;
+		}
+		return true;
+	});
 
 export default function ShareNotePopup({closePopup, note, open}: Props) {
 	const userContext = useContext(UserContext);
@@ -74,7 +81,7 @@ export default function ShareNotePopup({closePopup, note, open}: Props) {
 			shareNoteMutation.reset();
 			setShareNoteQueryError(null);
 			form.reset();
-		}, 1000);
+		}, 100);
 	}, [closePopup, shareNoteMutation, form]);
 
 	const createNewShareLink = (d: z.infer<typeof ShareLinkCreateFormSchema>) => {
@@ -111,10 +118,8 @@ export default function ShareNotePopup({closePopup, note, open}: Props) {
 							</Button>
 						</div>
 						<h2 className="pt-9 lg:pt-7 mb-4 font-semibold text-lg">Share note</h2>
-						<p className="mt-6 text-foreground font-medium text-md tracking-wide">{note.title}</p>
-						<p className="mt-1 text-muted-foreground text-bb tracking-wide">
-							Last updated {timeSince(note.updated)}
-						</p>
+						<p className="mt-6 text-foreground font-medium text-md">{note.title}</p>
+						<p className="text-muted-foreground text-bb">Last updated {timeSince(note.updated)}</p>
 						<div>
 							<div>
 								{shareNoteMutation.isSuccess ? (
@@ -163,13 +168,12 @@ export default function ShareNotePopup({closePopup, note, open}: Props) {
 									</>
 								) : (
 									<>
-										<h2 className="pt-7 pb-2 font-semibold">Share With</h2>
 										{shareNoteQueryError && (
 											<p className="mx-4 mt-4 text-red-700 text-sm">{shareNoteQueryError}</p>
 										)}
 										<Form {...form}>
 											<form
-												className="mt-2 space-y-2"
+												className="mt-3 space-y-2"
 												onSubmit={form.handleSubmit(createNewShareLink)}
 											>
 												<FormField
@@ -177,7 +181,7 @@ export default function ShareNotePopup({closePopup, note, open}: Props) {
 													name="title"
 													render={({field}) => (
 														<FormItem>
-															<FormLabel>Title</FormLabel>
+															<FormLabel>Sharing with</FormLabel>
 															<FormControl>
 																<Input placeholder="friends, work, ..." {...field} />
 															</FormControl>
@@ -189,38 +193,36 @@ export default function ShareNotePopup({closePopup, note, open}: Props) {
 													control={form.control}
 													name="pass_protect"
 													render={({field}) => (
-														<FormItem>
-															<FormLabel>Protect Link with Password</FormLabel>
+														<FormItem className="flex items-center gap-2">
+															<FormLabel className="mt-2">Protect Link with Password</FormLabel>
 															<FormControl>
-																<Checkbox
-																	className="size-10"
-																	checked={field.value}
-																	onCheckedChange={field.onChange}
-																/>
+																<Checkbox checked={field.value} onCheckedChange={field.onChange} />
 															</FormControl>
 															<FormMessage />
 														</FormItem>
 													)}
 												/>
-												<FormField
-													control={form.control}
-													name="password"
-													render={({field}) => (
-														<FormItem>
-															<FormLabel>Password</FormLabel>
-															<FormControl>
-																<Input {...field} />
-															</FormControl>
-															<FormMessage />
-														</FormItem>
-													)}
-												/>
+												{form.watch("pass_protect") && (
+													<FormField
+														control={form.control}
+														name="password"
+														render={({field}) => (
+															<FormItem>
+																<FormLabel>Password</FormLabel>
+																<FormControl>
+																	<Input {...field} />
+																</FormControl>
+																<FormMessage />
+															</FormItem>
+														)}
+													/>
+												)}
 												<FormField
 													control={form.control}
 													name="anon"
 													render={({field}) => (
-														<FormItem>
-															<FormLabel>Share as anonymous</FormLabel>
+														<FormItem className="flex items-center gap-2">
+															<FormLabel className="mt-2">Share as anonymous</FormLabel>
 															<FormControl>
 																<Checkbox checked={field.value} onCheckedChange={field.onChange} />
 															</FormControl>
@@ -232,6 +234,7 @@ export default function ShareNotePopup({closePopup, note, open}: Props) {
 													type="submit"
 													variant={"accent"}
 													disabled={shareNoteMutation.isPending}
+													className="!mt-6"
 												>
 													Get Share Link
 												</Button>
@@ -310,7 +313,7 @@ function ShareLinkItem({link}: {link: ShareNote}) {
 				<Button
 					disabled={disableShareLinkMutation.isSuccess || !link.active}
 					onClick={() => disableShareLinkMutation.mutate({id: link.id})}
-					variant={"ghost"}
+					variant={"destructiveGhost"}
 					size={"sm"}
 				>
 					{disableShareLinkMutation.isSuccess || !link.active ? "Disabled" : "Disable"}

@@ -16,7 +16,7 @@ export default function BaseSidebarLayout(props: {title: string; children: React
 						" top-0 left-0 w-full z-50"
 					}
 				>
-					<Sidebar />
+					<Sidebar title={props.title} />
 				</div>
 				<div className="flex-1 bg-gray-100 dark:bg-zinc-950">
 					{props.children}

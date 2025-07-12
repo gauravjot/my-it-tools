@@ -19,12 +19,12 @@ export default function RichNotesSidebar(props: ISidebarProps) {
 			<Suspense fallback={<SideBarNotelistSkeleton />}>
 				<>
 					<div className="px-3 py-3 flex gap-2 place-items-center border-b border-px border-foreground/20">
-						<div className="flex-1">
-							<div className="text-lg font-semibold truncate text-foreground whitespace-nowrap">
+						<div className="flex-1 overflow-ellipsis overflow-auto">
+							<div className="text-base tracking-tight font-semibold truncate text-foreground whitespace-nowrap">
 								{note ? note.title : "Untitled"}
 							</div>
 							<div className="text-xs text-foreground/50 align-middle block whitespace-nowrap truncate">
-								{note ? `(modified ${timeSince(note.updated)})` : ""}
+								{note ? `(modified ${timeSince(note.updated)})` : "(creating new note)"}
 							</div>
 						</div>
 						<div className="flex flex-col place-items-end gap-2">

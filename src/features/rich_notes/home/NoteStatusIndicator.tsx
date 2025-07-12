@@ -28,7 +28,7 @@ export default function NoteStatus(props: INoteStatusProps) {
 				status && (
 					<div
 						className={
-							"flex place-items-center gap-1.5 fixed bottom-0 right-0 shadow rounded-md px-2" +
+							"flex place-items-center gap-1.5 fixed select-none print:hidden bottom-0 right-0 shadow rounded-md px-2" +
 							" py-1 font-medium text-sm text-white z-30 m-6 " +
 							status.color
 						}

@@ -2,6 +2,7 @@ import {useContext, useEffect, useState} from "react";
 import {Link, useParams} from "react-router-dom";
 import {AxiosError} from "axios";
 import {Helmet} from "react-helmet";
+import * as z from "zod";
 // Slate
 import {createEditor} from "slate";
 import {Slate, Editable, withReact} from "slate-react";
@@ -9,133 +10,122 @@ import {useForm} from "react-hook-form";
 import "@/assets/styles/rich_notes/editor.css";
 import {UserContext} from "@/App";
 import useEditorConfig from "@/hooks/rich_notes/useEditorConfig";
-import {useMutation} from "@tanstack/react-query";
+import {useQuery} from "@tanstack/react-query";
 import {getSharedNote} from "@/services/rich_notes/note/get_shared_note";
 import {handleAxiosError} from "@/lib/HandleAxiosError";
 import {dateTimePretty, timeSince} from "@/lib/dateTimeUtils";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
-
-export type ShareNoteApiResponseType = {
-	noteTitle: string;
-	noteContent: string;
-	noteSharedBy: string;
-	noteSharedByUID: string;
-	noteSharedOn: string;
-	noteCreated: string;
-	noteUpdated: string;
-};
+import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
+import {zodResolver} from "@hookform/resolvers/zod";
 
 export default function RichNotesSharedPage() {
 	const {shareid} = useParams();
 	const user = useContext(UserContext);
-	const [document, setDocument] = useState();
-	const [error, setError] = useState<string | null>(null);
-	const [response, setResponse] = useState<ShareNoteApiResponseType | null>(null);
 	const [editor] = useState(() => withReact(createEditor()));
 	const {renderLeaf, renderElement} = useEditorConfig(editor);
 	const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-	const [password, setPassword] = useState("");
-
-	const noteMutation = useMutation({
-		mutationKey: ["sharedNote", shareid, password],
-		mutationFn: () =>
-			shareid ? getSharedNote(shareid, password) : Promise.reject("No note exist."),
-
-		onSuccess: (res) => {
-			setDocument(JSON.parse(res.noteContent));
-			setResponse(res);
-			setError(null);
-		},
-		onError: (error: AxiosError) => {
-			handleAxiosError(error, setError);
-		},
-	});
+	const [password, setPassword] = useState<string>("");
 
 	useEffect(() => {
-		// Run mutation
-		noteMutation.mutate();
 		// if mobile toggle sidebar off
 		if (window.innerWidth < 1024) {
 			setIsSidebarOpen(false);
 		}
 	}, []);
 
+	const query = useQuery({
+		queryKey: ["sharedNote", shareid, password],
+		queryFn: async () => {
+			if (!shareid) {
+				return Promise.reject("No note exist.");
+			}
+			return await getSharedNote(shareid, password);
+		},
+		retry: 0, // Disable automatic retries
+		refetchOnReconnect: false, // Disable refetching on r| undefinedeconnect
+		refetchOnWindowFocus: false, // Disable refetching on window focus
+	});
+
+	const providePassword = (password: string) => {
+		setPassword(password);
+		// Refetch the query with the new password
+		query.refetch();
+	};
+
 	return (
 		<>
 			<Helmet>
-				<title>{response ? response.noteTitle + " | " : ""}Letsnote</title>
+				<title>{query.isSuccess ? query.data.noteTitle + " | " : ""}Toolkit</title>
 			</Helmet>
-			<div className="App min-h-screen">
+			<div className="App min-h-screen bg-gray-200">
 				<div className="mx-auto lg:flex w-full">
 					<div
 						id="sidebar"
 						aria-hidden={isSidebarOpen ? "false" : "true"}
-						className="sidebar-hide-able"
+						className="sidebar-hide-able bg-gray-100 lg:w-72 lg:bg-white p-4 space-y-4 print:hidden"
 					>
-						<>
-							<div className="m-4">
-								<Link
-									to={"/"}
-									className="text-sm hover:underline hover:underline-offset-4 whitespace-nowrap overflow-hidden"
-								>
-									&#8592; Go back to editor
-								</Link>
+						<div>
+							<Link
+								to={"/rich-notes"}
+								className="text-sm hover:underline hover:underline-offset-4 whitespace-nowrap overflow-hidden"
+							>
+								&#8592; Go back to editor
+							</Link>
+						</div>
+						{query.isSuccess && (
+							<div>
+								<div className="text-xl font-bold text-gray-900 mb-4">
+									<span className="font-sans align-middle whitespace-nowrap overflow-hidden">
+										Details
+									</span>
+								</div>
+								{query.data.noteSharedBy !== undefined ? (
+									<>
+										<div className="text-sm font-medium text-gray-500 whitespace-nowrap overflow-hidden">
+											Shared by
+										</div>
+										<div className="whitespace-nowrap overflow-hidden">
+											{query.data.noteSharedBy}
+										</div>
+										<div className="text-xs mb-2 whitespace-nowrap overflow-hidden">
+											{query.data.noteSharedByUID}
+										</div>
+									</>
+								) : (
+									<></>
+								)}
+								<div className="text-sm font-medium text-gray-500">Title</div>
+								<div>{query.data.noteTitle}</div>
+								<div className="text-sm mt-2 font-medium text-gray-500">Modified</div>
+								<div className="whitespace-nowrap overflow-hidden">
+									{timeSince(query.data.noteUpdated)}
+								</div>
+								<div className="text-sm mt-2 font-medium text-gray-500">Created</div>
+								<div className="whitespace-nowrap overflow-hidden">
+									{dateTimePretty(query.data.noteCreated)}
+								</div>
+								<div className="text-sm mt-2 font-medium text-gray-500">Shared</div>
+								<div className="whitespace-nowrap overflow-hidden">
+									{dateTimePretty(query.data.noteSharedOn)}
+								</div>
 							</div>
-							{response && (
-								<div className="p-4 shadow-smb border-b border-gray-300">
-									<div className="text-xl font-bold text-gray-900 mb-4">
-										<span className="font-sans align-middle whitespace-nowrap overflow-hidden">
-											Details
-										</span>
-									</div>
-									{response.noteSharedBy !== undefined ? (
-										<>
-											<div className="text-sm font-medium text-gray-500 whitespace-nowrap overflow-hidden">
-												Shared by
-											</div>
-											<div className="whitespace-nowrap overflow-hidden">
-												{response.noteSharedBy}
-											</div>
-											<div className="text-xs mb-2 whitespace-nowrap overflow-hidden">
-												{response.noteSharedByUID}
-											</div>
-										</>
-									) : (
-										<></>
-									)}
-									<div className="text-sm font-medium text-gray-500">Title</div>
-									<div>{response.noteTitle}</div>
-									<div className="text-sm mt-2 font-medium text-gray-500">Modified</div>
-									<div className="whitespace-nowrap overflow-hidden">
-										{timeSince(response.noteUpdated)}
-									</div>
-									<div className="text-sm mt-2 font-medium text-gray-500">Created</div>
-									<div className="whitespace-nowrap overflow-hidden">
-										{dateTimePretty(response.noteCreated)}
-									</div>
-									<div className="text-sm mt-2 font-medium text-gray-500">Shared</div>
-									<div className="whitespace-nowrap overflow-hidden">
-										{dateTimePretty(response.noteSharedOn)}
-									</div>
+						)}
+						{user && (
+							<div>
+								<div className="text-xl font-bold text-gray-900 mb-4">
+									<span className="font-sans align-middle whitespace-nowrap overflow-hidden">
+										Actions
+									</span>
 								</div>
-							)}
-							{user && (
-								<div className="p-4 shadow-smb border-b border-gray-300">
-									<div className="text-xl font-bold text-gray-900 mb-4">
-										<span className="font-sans align-middle whitespace-nowrap overflow-hidden">
-											Actions
-										</span>
-									</div>
-									<ul>
-										<li className="whitespace-nowrap overflow-hidden">&#8594; Make a copy</li>
-									</ul>
-								</div>
-							)}
-						</>
+								<ul>
+									<li className="whitespace-nowrap overflow-hidden">&#8594; Make a copy</li>
+								</ul>
+							</div>
+						)}
 					</div>
 
-					<div className="min-h-screen bg-gray-200 w-full lg:flex-1 md:px-4 relative z-0">
+					<div className="min-h-screen w-full lg:flex-1 md:px-4 relative z-0">
 						{/*
 						 * Toggle to close the sidebar
 						 */}
@@ -178,8 +168,8 @@ export default function RichNotesSharedPage() {
 							</button>
 						</div>
 						<div className="z-40">
-							{!error && document ? (
-								<Slate editor={editor} initialValue={document}>
+							{query.isSuccess && document ? (
+								<Slate editor={editor} initialValue={JSON.parse(query.data.noteContent)}>
 									<div className="editor-container">
 										<div className="editor">
 											<div role="textbox">
@@ -188,11 +178,13 @@ export default function RichNotesSharedPage() {
 										</div>
 									</div>
 								</Slate>
-							) : error ? (
+							) : query.isError ? (
 								<>
-									<div>
-										<h1>Something went wrong</h1>
-										<p>{error}</p>
+									<div className="my-4 p-2 border-red-600 border text-red-800 rounded-md">
+										<h1 className="font-bold">Something went wrong...</h1>
+										<p className="text-md">
+											{handleAxiosError(query.error as AxiosError) as string}
+										</p>
 									</div>
 								</>
 							) : (
@@ -202,8 +194,14 @@ export default function RichNotesSharedPage() {
 					</div>
 				</div>
 				{/** Password needed */}
-				{(error != null && error?.includes("N1401")) || error?.includes("N1402") ? (
-					<PasswordPrompt setPassword={setPassword} error={error} />
+				{query.isError &&
+				query.error != null &&
+				((handleAxiosError(query.error as AxiosError) as string).includes("N1401") ||
+					(handleAxiosError(query.error as AxiosError) as string).includes("N1402")) ? (
+					<PasswordPrompt
+						setPassword={providePassword}
+						error={handleAxiosError(query.error as AxiosError) as string}
+					/>
 				) : (
 					<></>
 				)}
@@ -212,6 +210,10 @@ export default function RichNotesSharedPage() {
 	);
 }
 
+const PasswordPromptFormSchema = z.object({
+	password: z.string().max(255),
+});
+
 function PasswordPrompt({
 	setPassword,
 	error,
@@ -219,7 +221,23 @@ function PasswordPrompt({
 	setPassword: (password: string) => void;
 	error: string | null;
 }) {
-	const form = useForm();
+	const form = useForm({
+		resolver: zodResolver(PasswordPromptFormSchema),
+		mode: "all",
+		defaultValues: {
+			password: "",
+		},
+	});
+
+	useEffect(() => {
+		// On load, set the focus on the password input field
+		window.setTimeout(() => {
+			const inputField = document.querySelector("input[name='password']");
+			if (inputField) {
+				(inputField as HTMLInputElement).focus();
+			}
+		}, 100);
+	}, []);
 
 	return (
 		<div className="fixed inset-0 flex justify-center place-items-center z-[60]">
@@ -232,18 +250,32 @@ function PasswordPrompt({
 					It seems this note is locked behind the password.
 				</p>
 				{error && <p className="text-sm text-red-600 bg-red-100 px-2 my-3 py-1 rounded">{error}</p>}
-				<form
-					onSubmit={form.handleSubmit((d) => {
-						setPassword(d.password);
-						form.reset();
-					})}
-					className="space-y-2"
-				>
-					<Input name="password" id="password" type="password" className="w-full" />
-					<Button variant={"accent"} type="submit" className="w-full">
-						Submit
-					</Button>
-				</form>
+				<Form {...form}>
+					<form
+						onSubmit={form.handleSubmit((d) => {
+							setPassword(d.password);
+							form.reset();
+						})}
+						className="space-y-2"
+					>
+						<FormField
+							control={form.control}
+							name="password"
+							render={({field}) => (
+								<FormItem>
+									<FormLabel>Password</FormLabel>
+									<FormControl>
+										<Input {...field} />
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+						<Button variant={"accent"} type="submit" className="w-full">
+							Submit
+						</Button>
+					</form>
+				</Form>
 			</div>
 		</div>
 	);

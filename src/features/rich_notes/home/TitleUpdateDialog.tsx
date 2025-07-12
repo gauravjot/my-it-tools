@@ -63,16 +63,26 @@ export default function TitleUpdateDialog(props: IEditNoteNameDialogProps) {
 		};
 	}, [mutation, props]);
 
+	useEffect(() => {
+		// On load, set the focus on the input field
+		window.setTimeout(() => {
+			const inputField = document.querySelector("input[name='editnotename']");
+			if (inputField) {
+				(inputField as HTMLInputElement).focus();
+			}
+		}, 100);
+	}, []);
+
 	return (
 		<>
 			<div className="max-w-[380px] py-4 px-5 w-4/5 bg-background rounded-2xl shadow-md relative z-10">
 				<div className="flex justify-between place-items-center mb-3">
 					<h3 className="text-foreground select-none font-semibold text-lg">Edit Note Title</h3>
-					<Button variant={"ghost"} className="aspect-square p-0" onClick={closeDialog}>
-						<X size={22} />
+					<Button variant={"outline"} className="aspect-square p-1 size-8" onClick={closeDialog}>
+						<X size={18} />
 					</Button>
 				</div>
-				<div className="mt-6 mb-4 bg-muted py-1 px-2 rounded text-foreground">
+				<div className="mt-4 mb-4 bg-muted py-1 px-2 rounded text-foreground">
 					<p className="text-sm font-medium mb-1 select-none">Selected Note</p>
 					<p className="text-sm">
 						<b>Title:</b> <span className="text-muted-foreground">{props.note.title}</span>

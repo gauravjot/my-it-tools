@@ -44,19 +44,18 @@ const links = [
 	},
 ];
 
-export default function Sidebar() {
+export default function Sidebar({title}: {title?: string}) {
 	const currentPage = window.location;
 	const [isOpen, setIsOpen] = useState<boolean>(false);
 	const user = useContext(UserContext);
-	const currentLink = links.filter((s) => s.to === currentPage.pathname).at(0)?.name;
 
 	return (
 		<>
 			{!isOpen && (
-				<div className="max-w-full lg:hidden">
+				<div className="max-w-full lg:hidden print:hidden">
 					<div className="p-2 dark:bg-zinc-900 bg-white shadow-md flex place-items-center">
-						<h1 className="flex-1 text-foreground ml-2 font-semibold text-lg">
-							{currentLink ?? "Toolkit"}
+						<h1 className="flex-1 text-foreground ml-2 font-semibold text-lg truncate pr-4">
+							{title ?? "Toolkit"}
 						</h1>
 						<div>
 							<Button
@@ -73,7 +72,7 @@ export default function Sidebar() {
 			)}
 			<div
 				className={
-					"bg-white dark:bg-zinc-900 flex-col py-2 shadow min-h-screen" +
+					"bg-white dark:bg-zinc-900 flex-col py-2 shadow min-h-screen print:hidden" +
 					(!isOpen && " hidden lg:flex")
 				}
 			>

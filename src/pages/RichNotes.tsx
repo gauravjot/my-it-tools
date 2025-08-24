@@ -38,6 +38,7 @@ export default function RichNotesPage() {
 			EditorState.note?.id !== noteid &&
 			EditorState.state !== State.LOADING_NOTE
 		) {
+			console.log("RichNotesPage opening note");
 			EditorState.openNote(noteid).then(() => {
 				// smooth scroll to top
 				window.scrollTo({top: 0, behavior: "smooth"});
@@ -46,7 +47,7 @@ export default function RichNotesPage() {
 					setIsSidebarOpen(false);
 				}
 			});
-		} else if (!user) {
+		} else if (!user && EditorState.state !== State.NEW_NOTE) {
 			// Reset editor state if user is not logged in
 			EditorState.reset();
 		}

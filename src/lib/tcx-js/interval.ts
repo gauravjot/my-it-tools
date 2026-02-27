@@ -16,14 +16,26 @@ export interface CalculatedInterval {
 
 export function findIntervals(
 	trackpoints: Trackpoint[],
-	interval: IntervalType,
+	intervals: IntervalType[],
 	trackpointStartIndex: number,
 ): CalculatedInterval[] | null {
-	const intervalTimeSpan: number = interval.time || 0;
-	const recoveryTimeSpan: number = interval.recoveryTime || 0;
-	let repeatTimes: number = interval.repeatTimes || 0;
-	if (repeatTimes === 0) {
-		repeatTimes = 1; // Default to 1 if repeat is true but repeatTimes is not provided
+	const intervalTimeSpans: number[] = [];
+	const recoveryTimeSpans: number[] = [];
+	const repeatTimesTotal: number = intervals.reduce((max, interval) => {
+		return max + ((interval.repeatTimes === 0 ? 1 : interval.repeatTimes) || 1);
+	}, 0);
+
+	for (let i = 0; i < intervals.length; i++) {
+		for (let j = 0; j < (intervals[i].repeatTimes || 1); j++) {
+			intervalTimeSpans.push(intervals[i].time || 0); // push all individual interval time spans based on repeat times
+			recoveryTimeSpans.push(
+				j + 1 === (intervals[i].repeatTimes || 1) &&
+					i + 1 < intervals.length &&
+					intervals[i + 1].recoveryTimeAtStart !== undefined
+					? intervals[i + 1].recoveryTimeAtStart || 0
+					: intervals[i].recoveryTime || 0,
+			);
+		}
 	}
 
 	// Starting from trackpoint 1, we have to find the trackpoint starting from which the avg pace is the highest
@@ -35,7 +47,7 @@ export function findIntervals(
 		const possibleFirstTrackpoint = trackpoints[i];
 		// The last trackpoint needs to be atleast intervalTimeSpan into the future
 		let possibleLastTrackpoint = trackpoints.find(
-			(tp) => tp.epoch_ms - epoch_start >= intervalTimeSpan * 1000,
+			(tp) => tp.epoch_ms - epoch_start >= intervalTimeSpans[0] * 1000,
 		);
 		if (!possibleLastTrackpoint) {
 			possibleLastTrackpoint = trackpoints[trackpoints.length - 1];
@@ -72,7 +84,7 @@ export function findIntervals(
 			}, 0);
 
 		possibleIntervals.push({
-			interval,
+			interval: intervals[0],
 			firstTrackpoint: possibleFirstTrackpoint,
 			lastTrackpoint: possibleLastTrackpoint,
 			firstTrackpointIndex: i,
@@ -90,21 +102,21 @@ export function findIntervals(
 	for (let i = 0; i < possibleIntervals.length; i++) {
 		const currentPair: CalculatedInterval[] = [possibleIntervals[i]];
 		let currentInterval = i;
-		for (let j = 1; j < repeatTimes; j++) {
+		for (let j = 1; j < repeatTimesTotal; j++) {
 			const nextInterval = possibleIntervals
 				.slice(currentInterval + j, possibleIntervals.length)
 				.find(
 					(interval) =>
 						interval.firstTrackpoint.epoch_ms -
 							possibleIntervals[currentInterval].lastTrackpoint.epoch_ms >=
-						recoveryTimeSpan * 1000,
+						recoveryTimeSpans[j - 1] * 1000,
 				);
 			if (nextInterval) {
 				currentPair.push(nextInterval);
 				currentInterval = possibleIntervals.indexOf(nextInterval);
 			}
 		}
-		if (currentPair.length === repeatTimes) {
+		if (currentPair.length === repeatTimesTotal) {
 			pairedIntervals.push(currentPair);
 		}
 	}

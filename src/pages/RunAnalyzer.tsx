@@ -17,6 +17,7 @@ export const interval = z.object({
 	time: z.coerce.number().optional(), // in seconds
 	recoveryTime: z.coerce.number().optional(), // in seconds
 	repeatTimes: z.coerce.number().optional(),
+	recoveryTimeAtStart: z.coerce.number().optional(), // in seconds
 });
 
 export const workout = z.object({
@@ -50,7 +51,6 @@ export default function RunAnalyzer() {
 				try {
 					const parser = new Parser(text);
 					setParsedData(parser.activity);
-					console.log("Parsed Activity:", parser.activity);
 				} catch (error) {
 					console.error("Error parsing TCX file:", error);
 				}
@@ -60,19 +60,24 @@ export default function RunAnalyzer() {
 	};
 
 	const onSubmit: SubmitHandler<z.infer<typeof workout>> = (data) => {
-		const intervals = findIntervals(parsedData?.trackpoints || [], data.intervals[0], 0);
+		const intervals = findIntervals(parsedData?.trackpoints || [], data.intervals, 0);
 		setIntervals(intervals || []);
 	};
 
 	return (
 		<BaseSidebarLayout title="Run Analyzer">
-			<div className="flex flex-col xl:flex-row gap-6 mx-auto mt-4 max-w-7xl lg:mt-12 bg-background rounded-lg p-4 shadow-md">
+			<div className="flex flex-col xl:flex-row gap-6 xl:gap-8 mx-auto mt-4 max-w-7xl lg:mt-12 bg-background rounded-lg p-4 shadow-md">
 				<div className="lg:max-w-md w-full p-2">
+					<h1 className="text-2xl font-bold tracking-tight">Run Analyzer</h1>
+					<p className="mt-3 text-sm text-zinc-700 dark:text-zinc-300 mb-6">
+						Provide a .tcx file from your run and specify the intervals you want to analyze. You can
+						add multiple intervals with different durations and recovery times.
+					</p>
 					<Label className="align-text-top">Choose .tcx File</Label>
 					<Input type="file" accept=".tcx" onChange={handleFileChange} ref={fileRef} />
 					<div>
 						<Form {...form}>
-							<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3 mt-4">
+							<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2 mt-4">
 								<FormField
 									control={form.control}
 									name={"isInterval"}
@@ -86,66 +91,98 @@ export default function RunAnalyzer() {
 									)}
 								/>
 								{form.getValues("intervals").map((_interval, index) => (
-									<div key={index} className="bg-secondary p-2 my-2 border-b border-gray-300">
-										<div className="flex gap-2">
-											<FormField
-												control={form.control}
-												name={`intervals.${index}.time` as const}
-												render={({field}) => (
-													<FormItem>
-														<FormControl>
-															<Input placeholder="Duration" type="number" {...field} />
-														</FormControl>
-														<FormMessage />
-													</FormItem>
-												)}
-											/>
-											<FormField
-												control={form.control}
-												name={`intervals.${index}.recoveryTime` as const}
-												render={({field}) => (
-													<FormItem>
-														<FormControl>
-															<Input placeholder="Recovery Time" type="number" {...field} />
-														</FormControl>
-														<FormMessage />
-													</FormItem>
-												)}
-											/>
-											<div>
-												<Button
-													variant={"destructiveGhost"}
-													type="button"
-													size="icon"
-													onClick={() => {
-														const intervals = form.getValues("intervals");
-														intervals.splice(index, 1);
-														form.setValue("intervals", intervals);
-														// rerender form
-														form.trigger("intervals");
-													}}
-												>
-													<Trash2 size={16} color="red" />
-												</Button>
-											</div>
-										</div>
-										<div className="flex gap-3 mt-2 items-center">
-											<div>
-												<FormLabel className="align-text-top">Repeats</FormLabel>
-											</div>
-											<div className="flex-1">
+									<div key={index}>
+										{index === 0 && (
+											<>
+												<FormLabel>Intervals</FormLabel>
+												<p className="text-sm text-muted-foreground">
+													All interval durations are in seconds.
+												</p>
+											</>
+										)}
+										{index > 0 && (
+											<div className="bg-accent-100 dark:bg-accent-400/15 p-2 ml-4 my-2 border border-gray-300 dark:border-accent-400/30 rounded">
 												<FormField
 													control={form.control}
-													name={`intervals.${index}.repeatTimes` as const}
+													name={`intervals.${index}.recoveryTimeAtStart` as const}
 													render={({field}) => (
-														<FormItem className="w-28">
+														<FormItem>
+															<FormLabel>Intervals In-between Recovery Time</FormLabel>
 															<FormControl>
-																<Input placeholder="Repeats" type="number" {...field} />
+																<Input placeholder="Recovery Time" type="number" {...field} />
 															</FormControl>
 															<FormMessage />
 														</FormItem>
 													)}
 												/>
+											</div>
+										)}
+										<div className="bg-secondary dark:bg-zinc-800 p-2 my-2 border rounded border-gray-300 dark:border-zinc-500">
+											<div className="flex gap-2">
+												<FormField
+													control={form.control}
+													name={`intervals.${index}.time` as const}
+													render={({field}) => (
+														<FormItem>
+															<FormControl>
+																<Input placeholder="Duration" min={10} type="number" {...field} />
+															</FormControl>
+															<FormMessage />
+														</FormItem>
+													)}
+												/>
+												<FormField
+													control={form.control}
+													name={`intervals.${index}.recoveryTime` as const}
+													render={({field}) => (
+														<FormItem>
+															<FormControl>
+																<Input
+																	placeholder="Recovery Time"
+																	min={10}
+																	type="number"
+																	{...field}
+																/>
+															</FormControl>
+															<FormMessage />
+														</FormItem>
+													)}
+												/>
+												<div>
+													<Button
+														variant={"destructiveGhost"}
+														type="button"
+														size="icon"
+														onClick={() => {
+															const intervals = form.getValues("intervals");
+															intervals.splice(index, 1);
+															form.setValue("intervals", intervals);
+															// rerender form
+															form.trigger("intervals");
+														}}
+													>
+														<Trash2 size={16} color="red" />
+													</Button>
+												</div>
+											</div>
+											<div className="flex gap-3 mt-2 items-center">
+												<div>
+													<FormLabel className="align-text-top">Count</FormLabel>
+												</div>
+												<div className="flex-1">
+													<FormField
+														control={form.control}
+														name={`intervals.${index}.repeatTimes` as const}
+														render={({field}) => (
+															<FormItem className="w-28">
+																<FormControl>
+																	<Input placeholder="Runs" type="number" min={1} {...field} />
+																</FormControl>
+																<FormMessage />
+															</FormItem>
+														)}
+													/>
+												</div>
 											</div>
 										</div>
 									</div>
@@ -173,9 +210,11 @@ export default function RunAnalyzer() {
 										<span>Add Interval</span>
 									</Button>
 								</div>
-								<Button type="submit" variant={"accent"} className="w-full">
-									Process Workout
-								</Button>
+								<div className="mt-4">
+									<Button type="submit" variant={"accent"} className="w-full">
+										Process Workout
+									</Button>
+								</div>
 							</form>
 						</Form>
 					</div>
@@ -211,7 +250,7 @@ export default function RunAnalyzer() {
 					)}
 					{intervals.length > 0 && (
 						<div>
-							<h2 className="font-bold text-xl my-4 mb-2">Intervals</h2>
+							<h2 className="font-bold text-xl mt-6 mb-2">Intervals</h2>
 							<div className="grid grid-cols-4 gap-4 font-medium border-b border-gray-300 py-2 mt-2 px-2">
 								<div className="text-md leading-tight">Duration</div>
 								<div className="text-md leading-tight">Avg Pace</div>

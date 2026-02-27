@@ -9,6 +9,8 @@ import React, {Suspense} from "react";
 import {useQuery} from "@tanstack/react-query";
 import {getMe} from "./services/user/me";
 import Spinner from "./components/ui/spinner/Spinner";
+import Kanban from "./pages/Kanban";
+import RunAnalyzer from "./pages/RunAnalyzer";
 
 export const UserContext = React.createContext<UserType | null>(null);
 const PasswordGenerator = React.lazy(() => import("./pages/PasswordGenerator"));
@@ -31,6 +33,9 @@ export default function App() {
 			<Router>
 				<Routes>
 					<Route path={"/"} element={<Home />} />
+					<Route path={"/kanban"} element={<Kanban />} />
+					<Route path={"/run-analyzer"} element={<RunAnalyzer />} />
+					<Route path={"/index"} element={<Home />} />
 					<Route
 						path={"/password-generator"}
 						element={

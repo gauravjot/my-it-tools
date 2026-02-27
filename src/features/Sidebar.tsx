@@ -10,6 +10,7 @@ import {
 	LogOut,
 	Menu,
 	Notebook,
+	PersonStanding,
 	RectangleEllipsis,
 	X,
 } from "lucide-react";
@@ -41,6 +42,11 @@ const links = [
 		name: "Rich Notes",
 		to: "/rich-notes",
 		icon: <Notebook size={14} strokeWidth={3} />,
+	},
+	{
+		name: "Run Analyzer",
+		to: "/run-analyzer",
+		icon: <PersonStanding size={14} strokeWidth={3} />,
 	},
 ];
 

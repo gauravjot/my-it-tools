@@ -21,6 +21,8 @@ import {speedToPace} from "../lib/tcx-js/interval";
 import BaseSidebarLayout from "./_layout";
 import {Checkbox} from "@/components/ui/checkbox";
 import {getLaps, Lap} from "@/lib/tcx-js/laps";
+import HeartRateChart from "@/features/run_analyzer/HeartRateChart";
+import PaceChart from "@/features/run_analyzer/PaceChart";
 
 export const interval = z.object({
 	time: z.coerce.number().optional(), // in seconds
@@ -62,8 +64,8 @@ export default function RunAnalyzer() {
 					const parser = new Parser(text);
 					setParsedData(parser.activity);
 					const laps = getLaps(parser.activity.trackpoints || []);
-					console.log(laps);
 					setCalculateLaps(laps);
+					setCalculatedIntervals([]);
 				} catch (error) {
 					console.error("Error parsing TCX file:", error);
 				}
@@ -137,64 +139,47 @@ export default function RunAnalyzer() {
 													/>
 												</div>
 											)}
-											<div className="bg-secondary dark:bg-zinc-800 p-2 my-2 border rounded border-gray-300 dark:border-zinc-500">
-												<div className="relative">
-													<div className="flex gap-2 items-end">
-														<FormField
-															control={form.control}
-															name={`intervals.${index}.repeatTimes` as const}
-															render={({field}) => (
-																<FormItem className="w-24">
-																	<FormLabel>Count</FormLabel>
-																	<FormControl>
-																		<Input
-																			className="!mt-1 min-w-24"
-																			placeholder="Runs"
-																			type="number"
-																			min={1}
-																			{...field}
-																		/>
-																	</FormControl>
-																	<FormMessage />
-																</FormItem>
-															)}
-														/>
-														<XIcon size={16} className="text-muted-foreground mb-3" />
-														<FormField
-															control={form.control}
-															name={`intervals.${index}.time` as const}
-															render={({field}) => (
-																<FormItem>
-																	<FormLabel>Duration</FormLabel>
-																	<FormControl>
-																		<Input
-																			placeholder="Duration"
-																			className="!mt-1"
-																			min={10}
-																			type="number"
-																			{...field}
-																		/>
-																	</FormControl>
-																	<FormMessage />
-																</FormItem>
-															)}
-														/>
-													</div>
-													<Button
-														variant={"destructiveGhost"}
-														type="button"
-														size="icon"
-														className="absolute size-8 -right-6 -top-6 bg-background hover:bg-red-200 dark:hover:bg-red-950 rounded-full border"
-														onClick={() => {
-															const intervals = form.getValues("intervals");
-															intervals.splice(index, 1);
-															form.setValue("intervals", intervals);
-															// rerender form
-															form.trigger("intervals");
-														}}
-													>
-														<Trash2 size={16} />
-													</Button>
+											<div className="relative bg-secondary dark:bg-zinc-800 p-2 my-2 border rounded border-gray-300 dark:border-zinc-500">
+												<div className="flex gap-2 items-end">
+													<FormField
+														control={form.control}
+														name={`intervals.${index}.repeatTimes` as const}
+														render={({field}) => (
+															<FormItem className="w-24">
+																<FormLabel>Count</FormLabel>
+																<FormControl>
+																	<Input
+																		className="!mt-1 min-w-24"
+																		placeholder="Runs"
+																		type="number"
+																		min={1}
+																		{...field}
+																	/>
+																</FormControl>
+																<FormMessage />
+															</FormItem>
+														)}
+													/>
+													<XIcon size={16} className="text-muted-foreground mb-3" />
+													<FormField
+														control={form.control}
+														name={`intervals.${index}.time` as const}
+														render={({field}) => (
+															<FormItem>
+																<FormLabel>Duration</FormLabel>
+																<FormControl>
+																	<Input
+																		placeholder="Duration"
+																		className="!mt-1"
+																		min={10}
+																		type="number"
+																		{...field}
+																	/>
+																</FormControl>
+																<FormMessage />
+															</FormItem>
+														)}
+													/>
 												</div>
 												{(form.watch(`intervals.${index}.repeatTimes`) || 1) > 1 && (
 													<div className="flex gap-3 mt-2 items-center">
@@ -225,6 +210,21 @@ export default function RunAnalyzer() {
 														</div>
 													</div>
 												)}
+												<Button
+													variant={"destructiveGhost"}
+													type="button"
+													size="icon"
+													className="absolute size-8 -right-3 -top-3 bg-background hover:bg-red-200 dark:hover:bg-red-950 rounded-full border"
+													onClick={() => {
+														const intervals = form.getValues("intervals");
+														intervals.splice(index, 1);
+														form.setValue("intervals", intervals);
+														// rerender form
+														form.trigger("intervals");
+													}}
+												>
+													<Trash2 size={16} />
+												</Button>
 											</div>
 										</div>
 									))}
@@ -303,9 +303,9 @@ export default function RunAnalyzer() {
 										</div>
 									</div>
 									<div>
-										<div>
+										<div className="border rounded p-3">
 											{calculateLaps.length > 0 && (
-												<div className="grid grid-cols-7 gap-2 mt-2">
+												<div className="grid grid-cols-7 gap-2">
 													<div className="contents text-muted-foreground text-sm font-medium">
 														<div>Lap #</div>
 														<div className="col-span-2">Distance</div>
@@ -314,7 +314,7 @@ export default function RunAnalyzer() {
 													</div>
 													{calculateLaps.map((lap, index) => (
 														<div key={index} className="contents text-md leading-tight">
-															<div>{index + 1}</div>
+															<div className="text-muted-foreground">{index + 1}</div>
 															<div className="col-span-2">{lap.distance_km.toFixed(2)} km</div>
 															<div className="col-span-2">{lap.avgPace}</div>
 															<div className="col-span-2">{Math.round(lap.avgHeartRateBpm)}</div>
@@ -329,7 +329,11 @@ export default function RunAnalyzer() {
 						)}
 						{calculatedIntervals.length > 0 ? (
 							<div>
-								<h2 className="font-bold text-xl mt-6 mb-4">Intervals</h2>
+								<h2 className="font-bold text-xl mt-6">Intervals</h2>
+								<p className="text-sm text-muted-foreground mt-3 mb-6">
+									Intervals are calculated based on the best fit of the data. They may have
+									inaccuracies.
+								</p>
 								<div className="grid grid-cols-7 gap-3 font-medium border-b border-gray-300 dark:border-zinc-600 py-2 mt-2 px-2">
 									<div className="flex col-span-2">
 										<div className="text-md leading-tight w-10">#</div>
@@ -351,6 +355,32 @@ export default function RunAnalyzer() {
 							</div>
 						) : (
 							<p className="text-sm text-muted-foreground mt-4">No intervals calculated yet.</p>
+						)}
+						{parsedData && (
+							<>
+								<h2 className="font-bold text-xl mt-6 mb-4">Pace</h2>
+								<PaceChart
+									data={parsedData.trackpoints.map((point) => ({
+										time: point.time || "",
+										speed: point.speed || 0,
+									}))}
+									highlightRanges={calculatedIntervals.map((interval) => ({
+										start: interval.firstTrackpoint.time,
+										end: interval.lastTrackpoint.time,
+									}))}
+								/>
+								<h2 className="font-bold text-xl mt-6 mb-4">Heart Rate</h2>
+								<HeartRateChart
+									data={parsedData.trackpoints.map((point) => ({
+										time: point.time || "",
+										heartRate: point.heart_rate_bpm || 0,
+									}))}
+									highlightRanges={calculatedIntervals.map((interval) => ({
+										start: interval.firstTrackpoint.time,
+										end: interval.lastTrackpoint.time,
+									}))}
+								/>
+							</>
 						)}
 					</div>
 				</div>

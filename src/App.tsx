@@ -33,8 +33,40 @@ export default function App() {
 			<Router>
 				<Routes>
 					<Route path={"/"} element={<Home />} />
-					<Route path={"/kanban"} element={<KanbanPage />} />
-					<Route path={"/run-analyzer"} element={<RunAnalyzerPage />} />
+					<Route
+						path={"/kanban"}
+						element={
+							<Suspense
+								fallback={
+									<div className="fixed inset-0 size-full flex gap-4 place-items-center justify-center">
+										<Spinner size="md" color="gray" />
+										<p className="inline-block bg-black/5 border border-gray-300 px-2 py-0.5 rounded-md text-bb">
+											Loading page...
+										</p>
+									</div>
+								}
+							>
+								<KanbanPage />
+							</Suspense>
+						}
+					/>
+					<Route
+						path={"/run-analyzer"}
+						element={
+							<Suspense
+								fallback={
+									<div className="fixed inset-0 size-full flex gap-4 place-items-center justify-center">
+										<Spinner size="md" color="gray" />
+										<p className="inline-block bg-black/5 border border-gray-300 px-2 py-0.5 rounded-md text-bb">
+											Loading page...
+										</p>
+									</div>
+								}
+							>
+								<RunAnalyzerPage />
+							</Suspense>
+						}
+					/>
 					<Route path={"/index"} element={<Home />} />
 					<Route
 						path={"/password-generator"}

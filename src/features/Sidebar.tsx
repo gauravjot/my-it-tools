@@ -17,7 +17,7 @@ import {
 import {useContext, useState} from "react";
 import {Link} from "react-router-dom";
 
-const links = [
+export const links = [
 	{
 		name: "Password Generator",
 		to: "/password-generator",
@@ -60,9 +60,12 @@ export default function Sidebar({title}: {title?: string}) {
 			{!isOpen && (
 				<div className="max-w-full lg:hidden print:hidden">
 					<div className="p-2 dark:bg-zinc-900 bg-white shadow-md flex place-items-center">
-						<h1 className="flex-1 text-foreground ml-2 font-semibold text-lg truncate pr-4">
-							{title ?? "Toolkit"}
-						</h1>
+						<div className="flex-1 ml-2 pr-4">
+							<h1 className="text-foreground font-semibold text-lg truncate mb-0">
+								{title ?? "Toolkit"}
+							</h1>
+							<p className="text-xs text-muted-foreground mt-1 truncate !m-0">By GG</p>
+						</div>
 						<div>
 							<Button
 								className="aspect-sqaure size-12 !p-1 rounded-full"
@@ -83,12 +86,12 @@ export default function Sidebar({title}: {title?: string}) {
 				}
 			>
 				<div className="flex gap-4 mx-2 place-items-center">
-					<Link
-						to={"/"}
-						className="flex-1 text-lg ml-2 font-bold tracking-tight text-black dark:text-white"
-					>
-						My IT Tools
-					</Link>
+					<div className="flex-1 ml-2">
+						<Link to={"/"} className="text-lg font-bold tracking-tight text-black dark:text-white">
+							My IT Tools
+						</Link>
+						<p className="text-xs text-muted-foreground mt-1 truncate !m-0">By GG</p>
+					</div>
 					<ThemeToggler />
 					{isOpen && (
 						<Button

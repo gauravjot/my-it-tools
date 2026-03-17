@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useContext} from "react";
 import {Activity, Parser} from "@/lib/tcx-js/tcx";
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
@@ -8,10 +8,15 @@ import {z} from "zod";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {
 	ArrowDownIcon,
+	ArrowLeft,
 	ArrowUpIcon,
+	Calendar,
 	ChevronRight,
 	ClockPlusIcon,
 	EqualApproximately,
+	History,
+	Hourglass,
+	RulerDimensionLine,
 	Trash2,
 	XIcon,
 } from "lucide-react";
@@ -23,6 +28,12 @@ import {Checkbox} from "@/components/ui/checkbox";
 import {getLaps, Lap} from "@/lib/tcx-js/laps";
 import HeartRateChart from "@/features/run_analyzer/HeartRateChart";
 import PaceChart from "@/features/run_analyzer/PaceChart";
+import {UserContext} from "@/App";
+import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
+import {createRun, CreateRunType} from "@/services/run_analyzer/add_run";
+import {RunType} from "@/types/run_analyzer/run";
+import {getRunList} from "@/services/run_analyzer/get_runs";
+import {getRun} from "@/services/run_analyzer/get_single_run";
 
 export const interval = z.object({
 	time: z.coerce.number().optional(), // in seconds
@@ -32,6 +43,7 @@ export const interval = z.object({
 });
 
 export const workout = z.object({
+	name: z.string().optional(),
 	isInterval: z.boolean().default(true),
 	intervals: z.array(interval).default([]),
 });
@@ -40,14 +52,29 @@ export type FormData = z.infer<typeof workout>;
 export type IntervalType = z.infer<typeof interval>;
 
 export default function RunAnalyzer() {
+	const user = useContext(UserContext);
+	const queryClient = useQueryClient();
+	const [run, setRun] = React.useState<RunType | null>(null);
+
 	const [parsedData, setParsedData] = React.useState<Activity | null>(null);
 	const [calculatedIntervals, setCalculatedIntervals] = React.useState<CalculatedInterval[]>([]);
 	const [calculateLaps, setCalculateLaps] = React.useState<Lap[]>([]);
 	const fileRef = React.useRef<HTMLInputElement>(null);
 
+	const runs = useQuery({
+		queryKey: ["runs", user?.id],
+		queryFn: () => (user ? getRunList() : Promise.reject("User not logged in")),
+		enabled: !!user,
+	});
+
 	const form = useForm<FormData>({
 		resolver: zodResolver(workout),
 		defaultValues: {
+			name: `${new Date().toLocaleDateString("en-US", {
+				year: "numeric",
+				month: "short",
+				day: "numeric",
+			})} Run`,
 			isInterval: true,
 			intervals: [],
 		},
@@ -76,15 +103,61 @@ export default function RunAnalyzer() {
 
 	const onSubmit: SubmitHandler<z.infer<typeof workout>> = (data) => {
 		const intervals = findIntervals(parsedData?.trackpoints || [], data.intervals, 0);
-		console.log(JSON.stringify(intervals, null, 2));
 		setCalculatedIntervals(intervals || []);
+
+		if (user) {
+			const payload: CreateRunType = {
+				title: data.name || "Untitled Run",
+				distance: parsedData?.trackpoints
+					? parsedData.trackpoints[parsedData.trackpoints.length - 1].distance_km || 0
+					: 0,
+				time_start: parsedData?.trackpoints
+					? new Date(parsedData.trackpoints[0].time || "")
+					: new Date(),
+				time_end: parsedData?.trackpoints
+					? new Date(parsedData.trackpoints[parsedData.trackpoints.length - 1].time || "")
+					: new Date(),
+				is_interval: data.intervals.length > 0,
+				tcx: parsedData,
+				intervals: intervals,
+				laps: calculateLaps,
+			};
+			createRunMutation.mutate(payload);
+		}
+	};
+
+	const createRunMutation = useMutation({
+		mutationFn: (payload: CreateRunType) => {
+			return createRun(payload);
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({queryKey: ["runs"]});
+		},
+	});
+
+	const openRun = async (run: RunType) => {
+		const response = await getRun(run.id);
+		setRun(response);
+		setParsedData(response.tcx as Activity);
+		setCalculatedIntervals((response.intervals as CalculatedInterval[]) || []);
+		setCalculateLaps((response.laps as Lap[]) || []);
+	};
+
+	const resetRun = () => {
+		setParsedData(null);
+		setCalculatedIntervals([]);
+		setCalculateLaps([]);
+		setRun(null);
+		if (fileRef.current) {
+			fileRef.current.value = "";
+		}
 	};
 
 	return (
 		<BaseSidebarLayout title="Run Analyzer">
 			<div className="mx-auto mt-4 max-w-7xl lg:mt-12">
 				<div className="flex flex-col xl:flex-row gap-6 xl:gap-8 bg-white dark:bg-zinc-900 rounded-lg p-4 shadow-md m-4">
-					<div className="xl:max-w-sm w-full">
+					<div className={`xl:max-w-sm w-full ${run ? "hidden xl:block" : ""}`}>
 						<h1 className="text-2xl font-bold tracking-tight">Run Analyzer</h1>
 						<p className="mt-3 text-sm text-zinc-700 dark:text-zinc-300 mb-6">
 							Provide a .tcx file from your run and specify the intervals you want to analyze. You
@@ -94,7 +167,20 @@ export default function RunAnalyzer() {
 						<Input type="file" accept=".tcx" onChange={handleFileChange} ref={fileRef} />
 						<div>
 							<Form {...form}>
-								<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2 mt-4">
+								<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2 mt-2">
+									<FormField
+										control={form.control}
+										name={"name"}
+										render={({field}) => (
+											<FormItem className="mb-4">
+												<FormLabel>Run Name</FormLabel>
+												<FormControl>
+													<Input placeholder="Run Name" className="!mt-1" {...field} />
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
 									<FormField
 										control={form.control}
 										name={"isInterval"}
@@ -255,18 +341,93 @@ export default function RunAnalyzer() {
 											<span>Add Interval</span>
 										</Button>
 									</div>
-									<div className="mt-4">
-										<Button type="submit" variant={"accent"} className="w-full">
+									<div className="mt-4 space-y-2">
+										<Button
+											type="submit"
+											variant={"accent"}
+											className="w-full"
+											disabled={run !== null}
+										>
 											Process Workout
 										</Button>
+										{run && (
+											<Button
+												type="button"
+												variant={"outline"}
+												className="w-full mt-2"
+												onClick={() => {
+													setParsedData(null);
+													setCalculatedIntervals([]);
+													setCalculateLaps([]);
+													setRun(null);
+													if (fileRef.current) {
+														fileRef.current.value = "";
+													}
+												}}
+											>
+												Reset
+											</Button>
+										)}
 									</div>
 								</form>
 							</Form>
 						</div>
+						<h2 className="mt-6 mb-4 text-lg font-medium">Recorded Runs</h2>
+						{runs.data && runs.data.length > 0 ? (
+							<div className="my-4">
+								{runs.data.map((r: RunType) => (
+									<div
+										key={r.id}
+										className={`${run && run.id === r.id ? "bg-blue-500/10 hover:bg-blue-400/20" : "hover:bg-gray-100 dark:hover:bg-zinc-800"} border rounded p-3 cursor-pointer my-1`}
+										onClick={() => openRun(r)}
+									>
+										<div className="font-medium flex items-center justify-between">
+											<span>{r.title}</span>
+											{r.is_interval && <History size={16} className="inline ml-3 text-blue-600" />}
+										</div>
+										<div className="flex gap-2 place-items-center mt-1">
+											<RulerDimensionLine size={16} className="inline" />
+											<span className="text-sm text-muted-foreground">
+												{r.distance.toFixed(2)} km
+											</span>
+											<Hourglass size={16} className="inline ml-3" />
+											<span className="text-sm text-muted-foreground">
+												{new Date(r.time_end).getTime() - new Date(r.time_start).getTime() > 0
+													? new Date(
+															new Date(r.time_end).getTime() - new Date(r.time_start).getTime(),
+														)
+															.toISOString()
+															.substr(11, 8)
+													: "N/A"}
+											</span>
+											<Calendar size={16} className="inline ml-3" />
+											<span className="text-sm text-muted-foreground">
+												{new Date(r.time_start).toLocaleDateString("en-US", {
+													year: "numeric",
+													month: "short",
+													day: "numeric",
+												})}
+											</span>
+										</div>
+									</div>
+								))}
+							</div>
+						) : (
+							<p className="text-sm text-muted-foreground">No runs recorded yet.</p>
+						)}
 					</div>
 					<div className="flex-1 w-full">
 						{parsedData && (
 							<div>
+								<Button
+									variant={"accentLink"}
+									onClick={resetRun}
+									className={`gap-2 xl:hidden`}
+									size={"sm"}
+								>
+									<ArrowLeft className="" size={16} />
+									<span>Back to Runs</span>
+								</Button>
 								<h2 className="font-bold text-xl mt-4 xl:mt-2 mb-4">Run Analysis</h2>
 								<div className="md:grid md:grid-cols-2 gap-4">
 									<div>

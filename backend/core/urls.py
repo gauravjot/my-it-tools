@@ -19,9 +19,10 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-	path('api/user/', include('django_axor_auth.users.urls')),
-	path('auth/', include('django_axor_auth.web_auth.urls')),
+    path('api/user/', include('django_axor_auth.users.urls')),
+    path('auth/', include('django_axor_auth.web_auth.urls')),
 
-	path('api/expense_tracker/', include('expense_tracker.urls')),
-	path('api/rich_notes/', include('rich_notes.urls')),
+    path('api/expense_tracker/', include('expense_tracker.urls')),
+    path('api/rich_notes/', include('rich_notes.urls')),
+    path('api/run_analyzer/', include('run_analyzer.urls')),
 ]

@@ -1,6 +1,6 @@
 # Only to be used in development environment
 
-apps := django_axor_auth expense_tracker rich_notes
+apps := django_axor_auth expense_tracker rich_notes run_analyzer
 
 .PHONY: venv resetdb superuser getready run su
 

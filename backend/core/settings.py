@@ -14,6 +14,8 @@ DEBUG = config('DJANGO_DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = ['*']
 
+DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880 * 2  # 10 MB
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -29,7 +31,8 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'expense_tracker',
-    'rich_notes'
+    'rich_notes',
+    'run_analyzer'
 ]
 
 MIDDLEWARE = [

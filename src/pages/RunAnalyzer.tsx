@@ -10,13 +10,9 @@ import {
 	ArrowDownIcon,
 	ArrowLeft,
 	ArrowUpIcon,
-	Calendar,
 	ChevronRight,
 	ClockPlusIcon,
 	EqualApproximately,
-	History,
-	Hourglass,
-	RulerDimensionLine,
 	Trash2,
 	XIcon,
 } from "lucide-react";
@@ -34,6 +30,7 @@ import {createRun, CreateRunType} from "@/services/run_analyzer/add_run";
 import {RunType} from "@/types/run_analyzer/run";
 import {getRunList} from "@/services/run_analyzer/get_runs";
 import {getRun} from "@/services/run_analyzer/get_single_run";
+import RunList from "@/features/run_analyzer/RunList";
 
 export const interval = z.object({
 	time: z.coerce.number().optional(), // in seconds
@@ -373,47 +370,8 @@ export default function RunAnalyzer() {
 							</Form>
 						</div>
 						<h2 className="mt-6 mb-4 text-lg font-medium">Recorded Runs</h2>
-						{runs.data && runs.data.length > 0 ? (
-							<div className="my-4">
-								{runs.data.map((r: RunType) => (
-									<div
-										key={r.id}
-										className={`${run && run.id === r.id ? "bg-blue-500/10 hover:bg-blue-400/20" : "hover:bg-gray-100 dark:hover:bg-zinc-800"} border rounded p-3 cursor-pointer my-1`}
-										onClick={() => openRun(r)}
-									>
-										<div className="font-medium flex items-center justify-between">
-											<span>{r.title}</span>
-											{r.is_interval && <History size={16} className="inline ml-3 text-blue-600" />}
-										</div>
-										<div className="flex gap-2 place-items-center mt-1">
-											<RulerDimensionLine size={16} className="inline" />
-											<span className="text-sm text-muted-foreground">
-												{r.distance.toFixed(2)} km
-											</span>
-											<Hourglass size={16} className="inline ml-3" />
-											<span className="text-sm text-muted-foreground">
-												{new Date(r.time_end).getTime() - new Date(r.time_start).getTime() > 0
-													? new Date(
-															new Date(r.time_end).getTime() - new Date(r.time_start).getTime(),
-														)
-															.toISOString()
-															.substr(11, 8)
-													: "N/A"}
-											</span>
-											<Calendar size={16} className="inline ml-3" />
-											<span className="text-sm text-muted-foreground">
-												{new Date(r.time_start).toLocaleDateString("en-US", {
-													year: "numeric",
-													month: "short",
-													day: "numeric",
-												})}
-											</span>
-										</div>
-									</div>
-								))}
-							</div>
-						) : (
-							<p className="text-sm text-muted-foreground">No runs recorded yet.</p>
+						{runs.data && runs.data.length > 0 && (
+							<RunList runs={runs.data || []} currentRun={run} openRun={openRun} />
 						)}
 					</div>
 					<div className="flex-1 w-full">

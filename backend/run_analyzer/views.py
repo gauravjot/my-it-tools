@@ -88,3 +88,22 @@ def get_run(request, run_id):
             code="R0412",
             detail="The run could not be found."
         ).to_response()
+
+
+# Delete a run
+# -----------------------------------------------
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_run(request, run_id):
+    try:
+        run = Run.objects.get(id=run_id, user=get_request_user(request))
+        run.delete()
+        return Response(data={}, status=status.HTTP_204_NO_CONTENT)
+    except Run.DoesNotExist:
+        return ErrorMessage(
+            title="Run not found",
+            status=status.HTTP_404_NOT_FOUND,
+            instance=request.build_absolute_uri(),
+            code="R0413",
+            detail="The run could not be found."
+        ).to_response()
